@@ -1,0 +1,158 @@
+{
+  "metadata": {
+    "tool": "datamut",
+    "version": "0.1.0",
+    "generated_at": "2025-06-02T13:29:16.351594",
+    "summary": {
+      "total_findings": 10,
+      "by_severity": {
+        "HIGH": 7,
+        "MEDIUM": 3
+      },
+      "by_library": {
+        "pandas": 6,
+        "numpy": 4
+      },
+      "by_mutation_type": {
+        "row/col drop": 5,
+        "null value removal": 1,
+        "element removal": 2,
+        "element addition": 1,
+        "element insertion": 1
+      },
+      "files_analyzed": 1
+    }
+  },
+  "findings": [
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 12,
+      "column_offset": 0,
+      "library": "pandas",
+      "function_name": "drop",
+      "mutation_type": "row/col drop",
+      "severity": "HIGH",
+      "code_snippet": "df.drop('A', axis=1)",
+      "notes": "Permanently removes data from DataFrame. Use with caution in production.\n",
+      "rule_id": "drop.row/col_drop",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 13,
+      "column_offset": 0,
+      "library": "pandas",
+      "function_name": "dropna",
+      "mutation_type": "null value removal",
+      "severity": "MEDIUM",
+      "code_snippet": "df.dropna()",
+      "notes": "Removes rows/columns with missing values. May significantly reduce dataset size.\n",
+      "rule_id": "dropna.null_value_removal",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 14,
+      "column_offset": 0,
+      "library": "numpy",
+      "function_name": "delete",
+      "mutation_type": "element removal",
+      "severity": "HIGH",
+      "code_snippet": "np.delete(arr, 0)",
+      "notes": "Removes elements from an array. Creates a new array with elements deleted.\n",
+      "rule_id": "delete.element_removal",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 17,
+      "column_offset": 10,
+      "library": "pandas",
+      "function_name": "drop",
+      "mutation_type": "row/col drop",
+      "severity": "HIGH",
+      "code_snippet": "result1 = df.drop('A', axis=1).dropna().drop_duplicates()",
+      "notes": "Permanently removes data from DataFrame. Use with caution in production.\n",
+      "rule_id": "drop.row/col_drop",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 18,
+      "column_offset": 10,
+      "library": "pandas",
+      "function_name": "drop",
+      "mutation_type": "row/col drop",
+      "severity": "HIGH",
+      "code_snippet": "result2 = df.drop('B', axis=1).fillna(0).drop_duplicates(inplace=True)",
+      "notes": "Permanently removes data from DataFrame. Use with caution in production.\n",
+      "rule_id": "drop.row/col_drop",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 19,
+      "column_offset": 10,
+      "library": "numpy",
+      "function_name": "append",
+      "mutation_type": "element addition",
+      "severity": "MEDIUM",
+      "code_snippet": "result3 = np.append(np.delete(np.insert(arr, 0, 999), 1), [888])",
+      "notes": "Appends elements to the end of an array. Creates a new array.\n",
+      "rule_id": "append.element_addition",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 19,
+      "column_offset": 20,
+      "library": "numpy",
+      "function_name": "delete",
+      "mutation_type": "element removal",
+      "severity": "HIGH",
+      "code_snippet": "result3 = np.append(np.delete(np.insert(arr, 0, 999), 1), [888])",
+      "notes": "Removes elements from an array. Creates a new array with elements deleted.\n",
+      "rule_id": "delete.element_removal",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 19,
+      "column_offset": 30,
+      "library": "numpy",
+      "function_name": "insert",
+      "mutation_type": "element insertion",
+      "severity": "MEDIUM",
+      "code_snippet": "result3 = np.append(np.delete(np.insert(arr, 0, 999), 1), [888])",
+      "notes": "Inserts elements into an array. Creates a new array with elements added.\n",
+      "rule_id": "insert.element_insertion",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 22,
+      "column_offset": 16,
+      "library": "pandas",
+      "function_name": "drop",
+      "mutation_type": "row/col drop",
+      "severity": "HIGH",
+      "code_snippet": "processed_df = (df",
+      "notes": "Permanently removes data from DataFrame. Use with caution in production.\n",
+      "rule_id": "drop.row/col_drop",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/test_chain_detection.py",
+      "line_number": 29,
+      "column_offset": 15,
+      "library": "pandas",
+      "function_name": "drop",
+      "mutation_type": "row/col drop",
+      "severity": "HIGH",
+      "code_snippet": "mixed_result = df.drop('A', axis=1).reset_index(drop=True).dropna()",
+      "notes": "Permanently removes data from DataFrame. Use with caution in production.\n",
+      "rule_id": "drop.row/col_drop",
+      "extra_context": {}
+    }
+  ]
+}

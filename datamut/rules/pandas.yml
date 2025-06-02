@@ -1,0 +1,194 @@
+meta:
+  library: pandas
+  alias_regex: "^(pd|pandas)$"
+
+rules:
+  - func: join
+    mutation: "row-set merge"
+    default_severity: MEDIUM
+    notes: |
+      Can silently drop rows when how='inner'. Consider using merge() with 
+      validate parameter for better control.
+
+  - func: merge
+    mutation: "row-set merge"
+    default_severity: MEDIUM
+    notes: |
+      Can silently drop or duplicate rows depending on join type and key uniqueness.
+      Use validate parameter to catch unexpected behavior.
+
+  - func: drop
+    mutation: "row/col drop"
+    default_severity: HIGH
+    notes: |
+      Permanently removes data from DataFrame. Use with caution in production.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: CRITICAL
+
+  - func: drop_duplicates
+    mutation: "row deduplication"
+    default_severity: MEDIUM
+    notes: |
+      Removes duplicate rows which may be legitimate data in some contexts.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: HIGH
+
+  - func: dropna
+    mutation: "null value removal"
+    default_severity: MEDIUM
+    notes: |
+      Removes rows/columns with missing values. May significantly reduce dataset size.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: HIGH
+
+  - func: fillna
+    mutation: "null value imputation"
+    default_severity: LOW
+    notes: |
+      Replaces missing values with specified values. Can introduce bias if not done carefully.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: MEDIUM
+
+  - func: replace
+    mutation: "value replacement"
+    default_severity: MEDIUM
+    notes: |
+      Replaces specified values throughout the DataFrame. Can have wide-reaching effects.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: HIGH
+
+  - func: sort_values
+    mutation: "row reordering"
+    default_severity: LOW
+    notes: |
+      Changes the order of rows in the DataFrame.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: MEDIUM
+
+  - func: reset_index
+    mutation: "index modification"
+    default_severity: LOW
+    notes: |
+      Resets the DataFrame index, potentially losing index information.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: MEDIUM
+
+  - func: set_index
+    mutation: "index modification"
+    default_severity: LOW
+    notes: |
+      Changes the DataFrame index, affecting row identification.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: MEDIUM
+
+  - func: concat
+    mutation: "data concatenation"
+    default_severity: MEDIUM
+    notes: |
+      Combines multiple DataFrames. Can introduce duplicate indices or misaligned data.
+
+  - func: append
+    mutation: "row addition"
+    default_severity: MEDIUM
+    notes: |
+      Adds rows to DataFrame. Deprecated in favor of concat().
+    extra_checks:
+      arg_present:
+        name: ignore_index
+        value: false
+        set_severity: HIGH
+
+  - func: assign
+    mutation: "column assignment"
+    default_severity: LOW
+    notes: |
+      Adds or modifies columns in the DataFrame.
+
+  - func: insert
+    mutation: "column insertion"
+    default_severity: LOW
+    notes: |
+      Inserts a new column at a specific position.
+
+  - func: pop
+    mutation: "column removal"
+    default_severity: MEDIUM
+    notes: |
+      Removes and returns a column from the DataFrame.
+
+  - func: sample
+    mutation: "data sampling"
+    default_severity: MEDIUM
+    notes: |
+      Returns a random sample of rows. Results are non-deterministic unless random_state is set.
+
+  - func: groupby
+    mutation: "data aggregation"
+    default_severity: LOW
+    notes: |
+      Groups data for aggregation. The aggregation functions applied may mutate understanding of the data.
+
+  - func: pivot
+    mutation: "data reshaping"
+    default_severity: MEDIUM
+    notes: |
+      Reshapes data from long to wide format. Can create sparse matrices with many NaN values.
+
+  - func: pivot_table
+    mutation: "data aggregation/reshaping"
+    default_severity: MEDIUM
+    notes: |
+      Creates a pivot table with aggregation. May lose granular data through aggregation.
+
+  - func: melt
+    mutation: "data reshaping"
+    default_severity: MEDIUM
+    notes: |
+      Reshapes data from wide to long format. Changes the fundamental structure of the data.
+
+  - func: transpose
+    mutation: "data transposition"
+    default_severity: MEDIUM
+    notes: |
+      Transposes the DataFrame, swapping rows and columns.
+
+  - func: reindex
+    mutation: "index/column reordering"
+    default_severity: MEDIUM
+    notes: |
+      Reorders or adds/removes indices. Can introduce NaN values for missing indices.
+
+  - func: rename
+    mutation: "label modification"
+    default_severity: LOW
+    notes: |
+      Renames columns or index labels.
+    extra_checks:
+      arg_present:
+        name: inplace
+        value: true
+        set_severity: MEDIUM 

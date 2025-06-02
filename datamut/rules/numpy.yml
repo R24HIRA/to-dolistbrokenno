@@ -1,0 +1,250 @@
+meta:
+  library: numpy
+  alias_regex: "^(np|numpy)$"
+
+rules:
+  - func: delete
+    mutation: "element removal"
+    default_severity: HIGH
+    notes: |
+      Removes elements from an array. Creates a new array with elements deleted.
+
+  - func: insert
+    mutation: "element insertion"
+    default_severity: MEDIUM
+    notes: |
+      Inserts elements into an array. Creates a new array with elements added.
+
+  - func: append
+    mutation: "element addition"
+    default_severity: MEDIUM
+    notes: |
+      Appends elements to the end of an array. Creates a new array.
+
+  - func: concatenate
+    mutation: "array concatenation"
+    default_severity: MEDIUM
+    notes: |
+      Joins arrays along an existing axis. Can change array dimensions.
+
+  - func: hstack
+    mutation: "horizontal stacking"
+    default_severity: MEDIUM
+    notes: |
+      Stacks arrays horizontally (column-wise). Changes array structure.
+
+  - func: vstack
+    mutation: "vertical stacking"
+    default_severity: MEDIUM
+    notes: |
+      Stacks arrays vertically (row-wise). Changes array structure.
+
+  - func: dstack
+    mutation: "depth stacking"
+    default_severity: MEDIUM
+    notes: |
+      Stacks arrays depth-wise (along third axis). Changes array structure.
+
+  - func: split
+    mutation: "array splitting"
+    default_severity: MEDIUM
+    notes: |
+      Splits an array into multiple sub-arrays. Changes data organization.
+
+  - func: hsplit
+    mutation: "horizontal splitting"
+    default_severity: MEDIUM
+    notes: |
+      Splits an array horizontally. Changes data organization.
+
+  - func: vsplit
+    mutation: "vertical splitting"
+    default_severity: MEDIUM
+    notes: |
+      Splits an array vertically. Changes data organization.
+
+  - func: dsplit
+    mutation: "depth splitting"
+    default_severity: MEDIUM
+    notes: |
+      Splits an array depth-wise. Changes data organization.
+
+  - func: reshape
+    mutation: "shape modification"
+    default_severity: MEDIUM
+    notes: |
+      Changes the shape of an array without changing its data. Can affect data interpretation.
+
+  - func: resize
+    mutation: "array resizing"
+    default_severity: HIGH
+    notes: |
+      Changes the size and shape of an array. May truncate or repeat data.
+
+  - func: transpose
+    mutation: "array transposition"
+    default_severity: MEDIUM
+    notes: |
+      Transposes the array, reversing or permuting axes.
+
+  - func: swapaxes
+    mutation: "axis swapping"
+    default_severity: MEDIUM
+    notes: |
+      Swaps two axes of an array. Changes data layout and interpretation.
+
+  - func: moveaxis
+    mutation: "axis reordering"
+    default_severity: MEDIUM
+    notes: |
+      Moves axes of an array to new positions. Changes data layout.
+
+  - func: rollaxis
+    mutation: "axis rolling"
+    default_severity: MEDIUM
+    notes: |
+      Rolls the specified axis backwards. Changes data layout.
+
+  - func: squeeze
+    mutation: "dimension removal"
+    default_severity: LOW
+    notes: |
+      Removes single-dimensional entries from array shape.
+
+  - func: expand_dims
+    mutation: "dimension addition"
+    default_severity: LOW
+    notes: |
+      Expands the shape of an array by adding new axes.
+
+  - func: flatten
+    mutation: "array flattening"
+    default_severity: MEDIUM
+    notes: |
+      Returns a flattened copy of the array. Loses multidimensional structure.
+
+  - func: ravel
+    mutation: "array flattening"
+    default_severity: MEDIUM
+    notes: |
+      Returns a flattened array. May return a view or copy.
+
+  - func: sort
+    mutation: "element reordering"
+    default_severity: LOW
+    notes: |
+      Sorts an array. Changes element order but preserves all data.
+
+  - func: argsort
+    mutation: "index reordering"
+    default_severity: LOW
+    notes: |
+      Returns indices that would sort an array. Provides reordering information.
+
+  - func: partition
+    mutation: "element partitioning"
+    default_severity: LOW
+    notes: |
+      Partitions array elements around a pivot. Changes element order.
+
+  - func: argpartition
+    mutation: "index partitioning"
+    default_severity: LOW
+    notes: |
+      Returns indices that would partition an array. Provides reordering information.
+
+  - func: unique
+    mutation: "duplicate removal"
+    default_severity: MEDIUM
+    notes: |
+      Returns unique elements of an array. May reduce array size significantly.
+
+  - func: repeat
+    mutation: "element duplication"
+    default_severity: MEDIUM
+    notes: |
+      Repeats elements of an array. Increases array size and may introduce redundancy.
+
+  - func: tile
+    mutation: "array tiling"
+    default_severity: MEDIUM
+    notes: |
+      Tiles an array by repeating it. Significantly increases array size.
+
+  - func: roll
+    mutation: "element shifting"
+    default_severity: LOW
+    notes: |
+      Shifts elements along an axis. Changes element positions but preserves all data.
+
+  - func: flip
+    mutation: "element reversal"
+    default_severity: LOW
+    notes: |
+      Reverses the order of elements along an axis.
+
+  - func: fliplr
+    mutation: "left-right flip"
+    default_severity: LOW
+    notes: |
+      Flips array left to right (reverses columns).
+
+  - func: flipud
+    mutation: "up-down flip"
+    default_severity: LOW
+    notes: |
+      Flips array up to down (reverses rows).
+
+  - func: rot90
+    mutation: "array rotation"
+    default_severity: LOW
+    notes: |
+      Rotates an array by 90 degrees in the plane specified by axes.
+
+  - func: take
+    mutation: "element selection"
+    default_severity: MEDIUM
+    notes: |
+      Takes elements from an array along an axis. May reduce array size.
+
+  - func: choose
+    mutation: "conditional selection"
+    default_severity: MEDIUM
+    notes: |
+      Constructs array from index array and set of arrays to choose from.
+
+  - func: compress
+    mutation: "conditional filtering"
+    default_severity: MEDIUM
+    notes: |
+      Returns selected slices of an array along given axis using boolean condition.
+
+  - func: extract
+    mutation: "conditional extraction"
+    default_severity: MEDIUM
+    notes: |
+      Returns elements of an array that satisfy some condition.
+
+  - func: place
+    mutation: "conditional replacement"
+    default_severity: HIGH
+    notes: |
+      Changes elements of an array based on conditional and input values.
+
+  - func: put
+    mutation: "indexed replacement"
+    default_severity: HIGH
+    notes: |
+      Replaces specified elements of an array with given values.
+
+  - func: putmask
+    mutation: "masked replacement"
+    default_severity: HIGH
+    notes: |
+      Changes elements of an array based on conditional and input values.
+
+  - func: copyto
+    mutation: "array copying"
+    default_severity: MEDIUM
+    notes: |
+      Copies values from one array to another with broadcasting. 

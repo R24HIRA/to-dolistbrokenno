@@ -1,0 +1,124 @@
+meta:
+  library: sql
+  alias_regex: "^(sql|SQL)$"
+
+rules:
+  - func: INSERT
+    mutation: "data insertion"
+    default_severity: MEDIUM
+    notes: |
+      Adds new rows to a table. Can significantly increase table size and affect performance.
+
+  - func: UPDATE
+    mutation: "data update"
+    default_severity: HIGH
+    notes: |
+      Modifies existing data in a table. Can have wide-reaching effects if WHERE clause is broad.
+
+  - func: DELETE
+    mutation: "data deletion"
+    default_severity: CRITICAL
+    notes: |
+      Removes rows from a table. Data loss is permanent unless backed up.
+
+  - func: DROP
+    mutation: "schema/data drop"
+    default_severity: CRITICAL
+    notes: |
+      Removes entire tables, views, or other database objects. Causes permanent data loss.
+
+  - func: TRUNCATE
+    mutation: "data truncation"
+    default_severity: CRITICAL
+    notes: |
+      Removes all rows from a table quickly. Cannot be rolled back in some databases.
+
+  - func: ALTER
+    mutation: "schema alteration"
+    default_severity: HIGH
+    notes: |
+      Modifies table structure, constraints, or other schema elements. Can affect data integrity.
+
+  - func: CREATE
+    mutation: "schema creation"
+    default_severity: MEDIUM
+    notes: |
+      Creates new database objects like tables, indexes, or views. Changes database schema.
+
+  - func: MERGE
+    mutation: "data merge"
+    default_severity: MEDIUM
+    notes: |
+      Combines INSERT, UPDATE, and DELETE operations. Complex logic can have unexpected results.
+
+  - func: UPSERT
+    mutation: "data upsert"
+    default_severity: MEDIUM
+    notes: |
+      Insert or update operation. Behavior depends on whether record already exists.
+
+  - func: REPLACE
+    mutation: "data replacement"
+    default_severity: HIGH
+    notes: |
+      Replaces existing rows or inserts new ones. Can overwrite data unexpectedly.
+
+  - func: LOAD
+    mutation: "bulk data loading"
+    default_severity: MEDIUM
+    notes: |
+      Loads large amounts of data into tables. Can significantly impact database performance.
+
+  - func: IMPORT
+    mutation: "data import"
+    default_severity: MEDIUM
+    notes: |
+      Imports data from external sources. May introduce data quality issues.
+
+  - func: EXPORT
+    mutation: "data export"
+    default_severity: LOW
+    notes: |
+      Exports data from database. Generally read-only but may affect performance.
+
+  - func: COPY
+    mutation: "data copying"
+    default_severity: MEDIUM
+    notes: |
+      Copies data between tables or from/to files. Can duplicate or move large amounts of data.
+
+  - func: BACKUP
+    mutation: "database backup"
+    default_severity: LOW
+    notes: |
+      Creates backup of database or tables. Generally safe but may lock resources.
+
+  - func: RESTORE
+    mutation: "database restore"
+    default_severity: CRITICAL
+    notes: |
+      Restores database from backup. Overwrites current data with backup data.
+
+  - func: REINDEX
+    mutation: "index rebuilding"
+    default_severity: MEDIUM
+    notes: |
+      Rebuilds database indexes. Can affect query performance during operation.
+
+  - func: VACUUM
+    mutation: "database maintenance"
+    default_severity: LOW
+    notes: |
+      Reclaims storage and updates statistics. Generally safe maintenance operation.
+
+  - func: ANALYZE
+    mutation: "statistics update"
+    default_severity: LOW
+    notes: |
+      Updates table statistics for query optimization. Generally safe operation.
+
+  - func: CLUSTER
+    mutation: "table clustering"
+    default_severity: MEDIUM
+    notes: |
+      Physically reorders table data. Can improve performance but locks table during operation. 
