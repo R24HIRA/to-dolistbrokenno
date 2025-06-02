@@ -74,7 +74,17 @@ def analyze_file(file_path: Path, rule_loader: RuleLoader) -> List:
         console.print(f"[red]Error analyzing {file_path}: {e}[/red]")
         return []
     
-    return mutation_visitor.findings
+    # Collect all findings
+    all_findings = mutation_visitor.findings.copy()
+    
+    # Third pass: detect hardcoded variables
+    try:
+        hardcoded_findings = mutation_visitor.detect_hardcoded_variables(tree, source_code)
+        all_findings.extend(hardcoded_findings)
+    except Exception as e:
+        console.print(f"[red]Error detecting hardcoded variables in {file_path}: {e}[/red]")
+
+    return all_findings
 
 
 @app.command()

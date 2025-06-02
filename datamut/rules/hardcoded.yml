@@ -1,0 +1,84 @@
+meta:
+  library: hardcoded
+  alias_regex: "^(hardcoded)$"
+
+rules:
+  # Database connection strings
+  - func: database_connection
+    mutation: "hardcoded database connection"
+    default_severity: HIGH
+    notes: |
+      Hardcoded database connection strings pose security risks and reduce flexibility.
+      Consider using environment variables or configuration files.
+
+  # File paths
+  - func: file_path
+    mutation: "hardcoded file path"
+    default_severity: MEDIUM
+    notes: |
+      Hardcoded file paths reduce portability and maintainability.
+      Consider using relative paths or configuration.
+
+  # URLs and endpoints
+  - func: url_endpoint
+    mutation: "hardcoded URL/endpoint"
+    default_severity: MEDIUM
+    notes: |
+      Hardcoded URLs make it difficult to switch between environments.
+      Use configuration files or environment variables.
+
+  # Credentials
+  - func: credentials
+    mutation: "hardcoded credentials"
+    default_severity: CRITICAL
+    notes: |
+      Hardcoded credentials are a serious security vulnerability.
+      Use secure credential management systems.
+
+  # API keys and tokens
+  - func: api_key
+    mutation: "hardcoded API key"
+    default_severity: CRITICAL
+    notes: |
+      Hardcoded API keys should never be in source code.
+      Use environment variables or secure key management.
+
+  # Magic numbers
+  - func: magic_number
+    mutation: "magic number"
+    default_severity: LOW
+    notes: |
+      Magic numbers reduce code readability and maintainability.
+      Consider using named constants.
+
+  # Configuration values
+  - func: config_value
+    mutation: "hardcoded configuration"
+    default_severity: MEDIUM
+    notes: |
+      Hardcoded configuration values reduce flexibility.
+      Use configuration files or environment variables.
+
+  # Email addresses
+  - func: email_address
+    mutation: "hardcoded email address"
+    default_severity: MEDIUM
+    notes: |
+      Hardcoded email addresses should be configurable.
+      Consider using configuration or environment variables.
+
+  # IP addresses
+  - func: ip_address
+    mutation: "hardcoded IP address"
+    default_severity: HIGH
+    notes: |
+      Hardcoded IP addresses reduce portability and security.
+      Use DNS names or configuration files.
+
+  # Ports
+  - func: port_number
+    mutation: "hardcoded port number"
+    default_severity: MEDIUM
+    notes: |
+      Hardcoded port numbers reduce flexibility.
+      Consider using configuration files. 

@@ -10,6 +10,7 @@ from libcst.metadata import PositionProvider
 from .context import AnalysisContext, SQLContext
 from .finding import Finding, Severity
 from .loader import RuleLoader
+from .hardcoded_visitor import HardcodedVisitor
 
 
 class MutationVisitor(cst.CSTVisitor):
@@ -500,4 +501,15 @@ class MutationVisitor(cst.CSTVisitor):
 
     def _is_inner_call_in_chain(self, node: cst.Call) -> bool:
         """Check if this call is an inner call in a method chain."""
-        return id(node) in self.inner_calls 
+        return id(node) in self.inner_calls
+    
+    def detect_hardcoded_variables(self, tree: cst.Module, source_code: str) -> List[Finding]:
+        """Run hardcoded variable detection on the AST."""
+        hardcoded_visitor = HardcodedVisitor(self.file_path, self.rule_loader)
+        hardcoded_visitor.set_source_code(source_code)
+        
+        # Visit the tree with metadata
+        wrapper = cst.metadata.MetadataWrapper(tree)
+        wrapper.visit(hardcoded_visitor)
+        
+        return hardcoded_visitor.findings 
