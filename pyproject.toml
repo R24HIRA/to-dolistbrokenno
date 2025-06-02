@@ -49,9 +49,6 @@ dev = [
 [project.scripts]
 datamut = "datamut.cli:app"
 
-[project.entry-points."datamut.plugins"]
-# Built-in plugins can be registered here
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["datamut*"]

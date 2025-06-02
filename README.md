@@ -10,7 +10,6 @@ DataMut is a static analysis tool that scans Python code (and inline SQL strings
 - **Multiple Libraries**: Built-in support for pandas, numpy, and SQL operations
 - **Configurable Rules**: YAML-based rule bundles that auditors can edit without code changes
 - **Multiple Output Formats**: HTML (interactive), JSON, and SARIF for CI/CD integration
-- **Extensible**: Plugin system for adding support for additional libraries
 - **Rich CLI**: Beautiful command-line interface with progress indicators and colored output
 - **Severity Escalation**: Smart severity escalation based on function arguments (e.g., `inplace=True`)
 
@@ -240,8 +239,6 @@ datamut/
 │   ├── finding.py         # Finding data structures
 │   ├── loader.py          # Rule loading
 │   └── visitor.py         # LibCST visitors for detection
-├── plugins/
-│   └── __init__.py        # Plugin system
 ├── rules/
 │   ├── pandas.yml         # Pandas detection rules
 │   ├── numpy.yml          # NumPy detection rules
@@ -477,34 +474,6 @@ datamut list-rules
 
 # Filter rules by library
 datamut list-rules | grep pandas
-```
-
-## 🔌 Plugin System
-
-Extend DataMut with custom plugins:
-
-```python
-# my_plugin.py
-def get_visitors():
-    from .my_visitor import MyCustomVisitor
-    return [MyCustomVisitor]
-
-def get_rule_bundles():
-    from pathlib import Path
-    return [Path(__file__).parent / "my_rules.yml"]
-```
-
-Register in `setup.py`:
-
-```python
-setup(
-    # ...
-    entry_points={
-        'datamut.plugins': [
-            'my_plugin = my_package.my_plugin'
-        ]
-    }
-)
 ```
 
 ## 🐛 Troubleshooting
