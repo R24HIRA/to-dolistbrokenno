@@ -245,13 +245,70 @@ class MutationVisitor(cst.CSTVisitor):
         return None
     
     def _extract_code_snippet(self, node: cst.CSTNode, line_number: int) -> str:
-        """Extract code snippet around the node."""
+        """Extract code snippet around the node, capturing multi-line context when needed."""
         if not self.source_lines or line_number < 1 or line_number > len(self.source_lines):
             return ""
         
-        # Get the line (1-indexed to 0-indexed)
-        line = self.source_lines[line_number - 1]
-        return line.strip()
+        # Try to get position metadata for more accurate extraction
+        start_line = line_number
+        end_line = line_number
+        
+        try:
+            position = self.get_metadata(PositionProvider, node)
+            if position:
+                start_line = position.start.line
+                end_line = position.end.line
+        except Exception:
+            pass
+        
+        # For multi-line expressions, capture the full range
+        if end_line > start_line:
+            lines = []
+            for i in range(start_line, min(end_line + 1, len(self.source_lines) + 1)):
+                if i > 0 and i <= len(self.source_lines):
+                    lines.append(self.source_lines[i - 1].rstrip())
+            return '\n'.join(lines).strip()
+        
+        # For single line, try to capture more context for incomplete lines
+        current_line = self.source_lines[line_number - 1].strip()
+        
+        # If the line appears to be incomplete (ends with comma, open paren, etc.)
+        # try to find the complete statement
+        if (current_line.endswith((',', '(', '[', '{')) or 
+            current_line.count('(') != current_line.count(')') or
+            current_line.count('[') != current_line.count(']') or
+            current_line.count('{') != current_line.count('}')):
+            
+            # Look backwards to find the start of the statement
+            statement_start = line_number
+            for i in range(line_number - 1, 0, -1):
+                prev_line = self.source_lines[i - 1].strip()
+                if (not prev_line.endswith((',', '(', '[', '{', '\\')) and
+                    prev_line.count('(') == prev_line.count(')') and
+                    prev_line.count('[') == prev_line.count(']')):
+                    break
+                statement_start = i
+            
+            # Look forwards to find the end of the statement
+            statement_end = line_number
+            for i in range(line_number, len(self.source_lines)):
+                next_line = self.source_lines[i].strip()
+                if (not next_line.endswith((',', '(', '[', '{', '\\')) and
+                    current_line.count('(') == current_line.count(')') and
+                    current_line.count('[') == current_line.count(']')):
+                    statement_end = i + 1
+                    break
+                current_line += ' ' + next_line
+            
+            # Extract the complete statement
+            if statement_end > statement_start:
+                lines = []
+                for i in range(statement_start, min(statement_end + 1, len(self.source_lines) + 1)):
+                    if i > 0 and i <= len(self.source_lines):
+                        lines.append(self.source_lines[i - 1].rstrip())
+                return '\n'.join(lines).strip()
+        
+        return current_line
     
     def _apply_extra_checks(self, node: cst.Call, rule, default_severity: Severity) -> tuple[Severity, dict]:
         """Apply extra validation checks and potentially escalate severity."""

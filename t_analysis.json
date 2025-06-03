@@ -1,0 +1,297 @@
+{
+  "metadata": {
+    "tool": "datamut",
+    "version": "0.1.0",
+    "generated_at": "2025-06-02T22:58:11.951690",
+    "summary": {
+      "total_findings": 16,
+      "by_severity": {
+        "CRITICAL": 1,
+        "MEDIUM": 4,
+        "LOW": 11
+      },
+      "by_library": {
+        "sql": 2,
+        "hardcoded": 14
+      },
+      "by_mutation_type": {
+        "data deletion": 1,
+        "data insertion": 1,
+        "magic number": 11,
+        "hardcoded URL/endpoint": 2,
+        "hardcoded file path": 1
+      },
+      "files_analyzed": 1
+    }
+  },
+  "findings": [
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 147,
+      "column_offset": 4,
+      "library": "sql",
+      "function_name": "DELETE",
+      "mutation_type": "data deletion",
+      "severity": "CRITICAL",
+      "code_snippet": "print(\"Deleted:\", criteria)",
+      "notes": "SQL DELETE operation detected in string literal",
+      "rule_id": "sql.delete",
+      "extra_context": {
+        "sql_text": "Deleted:"
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 149,
+      "column_offset": 4,
+      "library": "sql",
+      "function_name": "INSERT",
+      "mutation_type": "data insertion",
+      "severity": "MEDIUM",
+      "code_snippet": "write_to_db(query=query, values=df.values, env=\"QA\", fast=True)",
+      "notes": "SQL INSERT operation detected in string literal",
+      "rule_id": "sql.insert",
+      "extra_context": {
+        "sql_text": "\n        INSERT INTO bahamas_atom_pv01\n            (business_date, inst_type, trade_id, maturity_dat..."
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 161,
+      "column_offset": 56,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "max_tenor = float(df_oq[\"TTM\"].astype(int).max()) / 365",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "365",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 163,
+      "column_offset": 4,
+      "library": "hardcoded",
+      "function_name": "url_endpoint",
+      "mutation_type": "hardcoded URL/endpoint",
+      "severity": "MEDIUM",
+      "code_snippet": "base_url = \"https://ends.cs.rbc.com/v1/marketdata/RATS-TOR/\"",
+      "notes": "Hardcoded URLs make it difficult to switch between environments.\nUse configuration files or environment variables.\n",
+      "rule_id": "url_endpoint.hardcoded_URL/endpoint",
+      "extra_context": {
+        "detected_value": "https://ends.cs.rbc.com/v1/marketdata/RATS-TOR/",
+        "category": "url_endpoint",
+        "variable_name": "base_url"
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 163,
+      "column_offset": 15,
+      "library": "hardcoded",
+      "function_name": "url_endpoint",
+      "mutation_type": "hardcoded URL/endpoint",
+      "severity": "MEDIUM",
+      "code_snippet": "base_url = \"https://ends.cs.rbc.com/v1/marketdata/RATS-TOR/\"",
+      "notes": "Hardcoded URLs make it difficult to switch between environments.\nUse configuration files or environment variables.\n",
+      "rule_id": "url_endpoint.hardcoded_URL/endpoint",
+      "extra_context": {
+        "detected_value": "https://ends.cs.rbc.com/v1/marketdata/RATS-TOR/",
+        "category": "url_endpoint",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 177,
+      "column_offset": 25,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "fund_notional_CAD = -3_500_000_000",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "3500000000",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 188,
+      "column_offset": 67,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "datelist[0], datelist[-1], [Bahamas_Node], [\"MTM Limits\"], 5314",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "5314",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 194,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12361, float(total_pv01))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12361",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 195,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12362, float(basis_spread_pv01))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12362",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 196,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12363, float(fund_notional_USD))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12363",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 197,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12364, float(max_tenor))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12364",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 198,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12365, float(net_eq_delta))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12365",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 199,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12366, float(single_name_delta))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12366",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 200,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12365, float(dl_VaR))   # \u2190 duplicated ID in original",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12365",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 205,
+      "column_offset": 4,
+      "library": "hardcoded",
+      "function_name": "file_path",
+      "mutation_type": "hardcoded file path",
+      "severity": "MEDIUM",
+      "code_snippet": "path = (",
+      "notes": "Hardcoded file paths reduce portability and maintainability.\nConsider using relative paths or configuration.\n",
+      "rule_id": "file_path.hardcoded_file_path",
+      "extra_context": {
+        "detected_value": "r\"\\\\castvsfg6.fg.rbc.com\\UR2$\\PROD\\data\\output\\SFRS_PDR\"",
+        "category": "file_path",
+        "variable_name": "path"
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 226,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12367, float(collateral))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12367",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    }
+  ]
+}
