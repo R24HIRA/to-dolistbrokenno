@@ -57,13 +57,28 @@ class HTMLEmitter(BaseEmitter):
         env = Environment(loader=FileSystemLoader(template_dir))
         template = env.get_template("report.html")
         
+        # Prepare file list for dropdown
+        file_stats = {}
+        for finding in self.findings:
+            file_path = str(finding.file_path)
+            if file_path not in file_stats:
+                file_stats[file_path] = {
+                    'path': file_path,
+                    'name': Path(file_path).name,
+                    'findings_count': 0
+                }
+            file_stats[file_path]['findings_count'] += 1
+        
+        file_list = sorted(file_stats.values(), key=lambda x: x['findings_count'], reverse=True)
+        
         # Prepare data for template
         context = {
             'findings': self.findings,
             'summary': self.get_summary_stats(),
             'generated_at': datetime.now().isoformat(),
             'total_files': len(set(f.file_path for f in self.findings)),
-            'severities': ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+            'severities': ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
+            'file_list': file_list
         }
         
         # Render template

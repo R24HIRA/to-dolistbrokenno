@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +14,9 @@
     <!-- Prism.js for syntax highlighting -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
     
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         .severity-badge {
             font-size: 0.75rem;
@@ -22,6 +25,13 @@
         
         .finding-row:hover {
             background-color: var(--bs-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .finding-row.selected {
+            background-color: var(--bs-primary-bg-subtle);
+            border-left: 4px solid var(--bs-primary);
         }
         
         .code-snippet {
@@ -31,21 +41,35 @@
             padding: 0.25rem 0.5rem;
             border-radius: 0.25rem;
             border-left: 3px solid var(--bs-primary);
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .code-snippet:hover {
+            max-width: none;
+            white-space: pre-wrap;
+            overflow: visible;
         }
         
         .stats-card {
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .stats-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         
         .filter-section {
-            background-color: var(--bs-light);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--bs-light) 0%, var(--bs-secondary-bg) 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--bs-border-color);
         }
         
         .table-container {
@@ -53,22 +77,36 @@
             overflow-y: auto;
         }
         
-        .severity-LOW { background-color: var(--bs-secondary); }
-        .severity-MEDIUM { background-color: var(--bs-warning); }
-        .severity-HIGH { background-color: var(--bs-danger); }
-        .severity-CRITICAL { background-color: var(--bs-dark); }
+        .severity-LOW { 
+            background: linear-gradient(45deg, #6c757d, #8e9297);
+            color: white;
+        }
+        .severity-MEDIUM { 
+            background: linear-gradient(45deg, #ffc107, #ffcd3a);
+            color: black;
+        }
+        .severity-HIGH { 
+            background: linear-gradient(45deg, #fd7e14, #ff922b);
+            color: white;
+        }
+        .severity-CRITICAL { 
+            background: linear-gradient(45deg, #dc3545, #e55563);
+            color: white;
+        }
         
         .library-badge {
-            background-color: var(--bs-info);
+            background: linear-gradient(45deg, #0dcaf0, #3dd5f3);
             color: white;
             font-size: 0.7rem;
             padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
+            border-radius: 0.5rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .mutation-type {
             font-style: italic;
             color: var(--bs-secondary);
+            font-weight: 500;
         }
         
         .notes-popover {
@@ -78,16 +116,113 @@
         .search-highlight {
             background-color: yellow;
             font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+        
+        .risk-score {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .risk-low { color: #198754; }
+        .risk-medium { color: #ffc107; }
+        .risk-high { color: #fd7e14; }
+        .risk-critical { color: #dc3545; }
+        
+        .timeline-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .timeline-item {
+            border-left: 3px solid var(--bs-primary);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--bs-primary);
+        }
+        
+        .file-selector {
+            background: white;
+            border: 2px solid var(--bs-primary);
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .file-selector:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            border-color: var(--bs-primary);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        [data-bs-theme="dark"] .code-snippet {
+            background-color: var(--bs-dark);
+            color: var(--bs-light);
+        }
+        
+        .floating-stats {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+        
+        .pulse-animation {
+            animation: heartbeat 2s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.1); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.05); }
+            70% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
+    <!-- Theme Toggle Button -->
+    <button class="btn btn-outline-primary theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+        <i class="bi bi-moon-stars" id="theme-icon"></i>
+    </button>
+
     <div class="container-fluid py-4">
         <!-- Header -->
         <div class="row mb-4">
             <div class="col">
                 <h1 class="display-4 text-primary">
-                    <i class="bi bi-shield-exclamation"></i>
+                    <i class="bi bi-shield-exclamation pulse-animation"></i>
                     DataMut Analysis Report
                 </h1>
                 <p class="lead text-muted">
@@ -95,72 +230,101 @@
                 </p>
             </div>
         </div>
-        
-        <!-- Summary Statistics -->
+
+        <!-- Severity Bar Chart -->
         <div class="row mb-4">
-            <div class="col-md-3">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart"></i>
+                            Severity Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="severityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Summary Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-2">
                 <div class="card stats-card h-100">
                     <div class="card-body text-center">
                         <h2 class="card-title text-primary">{{ summary.total_findings }}</h2>
                         <p class="card-text">Total Findings</p>
+                        <i class="bi bi-exclamation-triangle text-primary fs-1"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <div class="card stats-card h-100">
                     <div class="card-body text-center">
                         <h2 class="card-title text-info">{{ total_files }}</h2>
                         <p class="card-text">Files Analyzed</p>
+                        <i class="bi bi-files text-info fs-1"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card stats-card h-100">
                     <div class="card-body">
                         <h6 class="card-title">By Severity</h6>
                         {% for severity in severities %}
                             {% set count = summary.by_severity.get(severity, 0) %}
                             {% if count > 0 %}
-                                <div class="d-flex justify-content-between">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="badge severity-{{ severity }} severity-badge">{{ severity }}</span>
-                                    <span>{{ count }}</span>
+                                    <span class="fw-bold">{{ count }}</span>
                                 </div>
                             {% endif %}
                         {% endfor %}
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card stats-card h-100">
                     <div class="card-body">
                         <h6 class="card-title">By Library</h6>
                         {% for library, count in summary.by_library.items() %}
-                            <div class="d-flex justify-content-between">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="library-badge">{{ library }}</span>
-                                <span>{{ count }}</span>
+                                <span class="fw-bold">{{ count }}</span>
                             </div>
                         {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Filters -->
+
+        <!-- Enhanced Filters -->
         <div class="filter-section">
             <h5 class="mb-3">
                 <i class="bi bi-funnel"></i>
-                Filters
+                Smart Filters & File Selection
             </h5>
             <div class="row">
                 <div class="col-md-4">
-                    <label for="searchInput" class="form-label">Search</label>
-                    <input type="text" class="form-control" id="searchInput" placeholder="Search files, functions, or code..."
-                           hx-post="/search" hx-target="#findingsTable" hx-trigger="keyup changed delay:300ms">
+                    <label for="fileSelector" class="form-label">
+                        <i class="bi bi-file-code"></i>
+                        Select File to Analyze
+                    </label>
+                    <select class="form-select file-selector" id="fileSelector">
+                        <option value="">All Files</option>
+                        {% for file_info in file_list %}
+                            <option value="{{ file_info.path }}" data-findings="{{ file_info.findings_count }}">
+                                {{ file_info.name }} ({{ file_info.findings_count }} findings)
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <label for="severityFilter" class="form-label">Severity</label>
-                    <select class="form-select" id="severityFilter"
-                            hx-post="/filter" hx-target="#findingsTable" hx-trigger="change">
+                    <select class="form-select" id="severityFilter">
                         <option value="">All Severities</option>
                         {% for severity in severities %}
                             <option value="{{ severity }}">{{ severity }}</option>
@@ -169,8 +333,7 @@
                 </div>
                 <div class="col-md-2">
                     <label for="libraryFilter" class="form-label">Library</label>
-                    <select class="form-select" id="libraryFilter"
-                            hx-post="/filter" hx-target="#findingsTable" hx-trigger="change">
+                    <select class="form-select" id="libraryFilter">
                         <option value="">All Libraries</option>
                         {% for library in summary.by_library.keys() %}
                             <option value="{{ library }}">{{ library }}</option>
@@ -179,8 +342,7 @@
                 </div>
                 <div class="col-md-2">
                     <label for="mutationFilter" class="form-label">Mutation Type</label>
-                    <select class="form-select" id="mutationFilter"
-                            hx-post="/filter" hx-target="#findingsTable" hx-trigger="change">
+                    <select class="form-select" id="mutationFilter">
                         <option value="">All Types</option>
                         {% for mutation_type in summary.by_mutation_type.keys() %}
                             <option value="{{ mutation_type }}">{{ mutation_type }}</option>
@@ -188,43 +350,82 @@
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-outline-secondary" onclick="clearFilters()">
-                        <i class="bi bi-x-circle"></i>
-                        Clear
-                    </button>
+                    <div class="btn-group w-100">
+                        <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="bi bi-x-circle"></i>
+                            Clear
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="toggleView()">
+                            <i class="bi bi-view-list" id="view-icon"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Findings Table -->
-        <div class="card">
+
+        <!-- Timeline View (Hidden by default) -->
+        <div class="card mb-4" id="timelineView" style="display: none;">
             <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i>
+                    Findings Timeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline-container" id="timelineContainer">
+                    <!-- Timeline items will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Findings Table -->
+        <div class="card" id="tableView">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="bi bi-table"></i>
                     Findings Details
                 </h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-success" onclick="selectAll()">
+                        <i class="bi bi-check-all"></i>
+                        Select All
+                    </button>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-container">
                     <table class="table table-hover mb-0" id="findingsTable">
                         <thead class="table-dark sticky-top">
                             <tr>
-                                <th>File</th>
-                                <th>Line</th>
-                                <th>Library</th>
-                                <th>Function</th>
-                                <th>Mutation Type</th>
-                                <th>Severity</th>
-                                <th>Code Snippet</th>
-                                <th>Notes</th>
+                                <th width="5%">
+                                    <input type="checkbox" class="form-check-input" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                                </th>
+                                <th width="20%">File</th>
+                                <th width="8%">Line</th>
+                                <th width="10%">Library</th>
+                                <th width="15%">Function</th>
+                                <th width="15%">Mutation Type</th>
+                                <th width="10%">Severity</th>
+                                <th width="25%">Code Snippet</th>
+                                <th width="7%">Notes</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for finding in findings %}
-                                <tr class="finding-row" data-severity="{{ finding.severity.value }}" 
-                                    data-library="{{ finding.library }}" data-mutation="{{ finding.mutation_type }}">
+                                <tr class="finding-row" 
+                                    data-severity="{{ finding.severity.value }}" 
+                                    data-library="{{ finding.library }}" 
+                                    data-mutation="{{ finding.mutation_type }}"
+                                    data-file="{{ finding.display_path }}"
+                                    onclick="selectRow(this)">
                                     <td>
-                                        <small class="text-muted">{{ finding.display_path }}</small>
+                                        <input type="checkbox" class="form-check-input row-checkbox" onclick="event.stopPropagation()">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-file-code text-primary me-2"></i>
+                                            <small class="text-muted">{{ finding.display_path }}</small>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="badge bg-light text-dark">{{ finding.line_number }}</span>
@@ -233,7 +434,7 @@
                                         <span class="library-badge">{{ finding.library }}</span>
                                     </td>
                                     <td>
-                                        <code>{{ finding.function_name }}</code>
+                                        <code class="bg-transparent">{{ finding.function_name }}</code>
                                     </td>
                                     <td>
                                         <span class="mutation-type">{{ finding.mutation_type }}</span>
@@ -244,7 +445,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="code-snippet">
+                                        <div class="code-snippet" title="Click to expand">
                                             <code>{{ finding.code_snippet }}</code>
                                         </div>
                                     </td>
@@ -254,7 +455,8 @@
                                                     data-bs-toggle="popover" 
                                                     data-bs-placement="left"
                                                     data-bs-content="{{ finding.notes }}"
-                                                    data-bs-html="true">
+                                                    data-bs-html="true"
+                                                    onclick="event.stopPropagation()">
                                                 <i class="bi bi-info-circle"></i>
                                             </button>
                                         {% endif %}
@@ -266,48 +468,29 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Export Options -->
-        <div class="row mt-4">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">
-                            <i class="bi bi-download"></i>
-                            Export Options
-                        </h6>
-                        <p class="card-text text-muted">
-                            This report can also be generated in JSON or SARIF format for CI/CD integration.
-                        </p>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-primary" onclick="exportData('json')">
-                                <i class="bi bi-filetype-json"></i>
-                                JSON
-                            </button>
-                            <button type="button" class="btn btn-outline-primary" onclick="exportData('sarif')">
-                                <i class="bi bi-file-code"></i>
-                                SARIF
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- htmx -->
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     
     <!-- Prism.js for syntax highlighting -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     
     <script>
-        // Initialize Bootstrap popovers
+        let currentView = 'table';
+        let selectedRows = new Set();
+        let severityChart;
+        
+        // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            initializePopovers();
+            initializeSeverityChart();
+            setupEventListeners();
+        });
+        
+        // Initialize Bootstrap popovers
+        function initializePopovers() {
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
             var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
                 return new bootstrap.Popover(popoverTriggerEl, {
@@ -315,77 +498,243 @@
                     customClass: 'notes-popover'
                 });
             });
-        });
+        }
         
-        // Client-side filtering (fallback when htmx is not available)
+        // Initialize the severity bar chart
+        function initializeSeverityChart() {
+            const ctx = document.getElementById('severityChart').getContext('2d');
+            const severityData = {
+                {% for severity in severities -%}
+                    '{{ severity }}': {{ summary.by_severity.get(severity, 0) }}{% if not loop.last %},{% endif %}
+                {% endfor -%}
+            };
+            
+            severityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(severityData),
+                    datasets: [{
+                        label: 'Number of Findings',
+                        data: Object.values(severityData),
+                        backgroundColor: [
+                            'rgba(108, 117, 125, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(253, 126, 20, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(108, 117, 125, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(253, 126, 20, 1)',
+                            'rgba(220, 53, 69, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            const filters = ['fileSelector', 'severityFilter', 'libraryFilter', 'mutationFilter'];
+            filters.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', filterTable);
+                }
+            });
+        }
+        
+        // Enhanced filtering with file selection
         function filterTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const fileFilter = document.getElementById('fileSelector').value;
             const severityFilter = document.getElementById('severityFilter').value;
             const libraryFilter = document.getElementById('libraryFilter').value;
             const mutationFilter = document.getElementById('mutationFilter').value;
             
             const rows = document.querySelectorAll('#findingsTable tbody tr');
+            let visibleCount = 0;
             
             rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
+                const file = row.dataset.file;
                 const severity = row.dataset.severity;
                 const library = row.dataset.library;
                 const mutation = row.dataset.mutation;
                 
-                const matchesSearch = !searchTerm || text.includes(searchTerm);
+                const matchesFile = !fileFilter || file.includes(fileFilter);
                 const matchesSeverity = !severityFilter || severity === severityFilter;
                 const matchesLibrary = !libraryFilter || library === libraryFilter;
                 const matchesMutation = !mutationFilter || mutation === mutationFilter;
                 
-                if (matchesSearch && matchesSeverity && matchesLibrary && matchesMutation) {
+                if (matchesFile && matchesSeverity && matchesLibrary && matchesMutation) {
                     row.style.display = '';
+                    visibleCount++;
                 } else {
                     row.style.display = 'none';
                 }
             });
+            
+            // Update visible count
+            console.log(`Showing ${visibleCount} of ${rows.length} findings`);
+        }
+        
+        // Toggle between table and timeline view
+        function toggleView() {
+            const tableView = document.getElementById('tableView');
+            const timelineView = document.getElementById('timelineView');
+            const viewIcon = document.getElementById('view-icon');
+            
+            if (currentView === 'table') {
+                tableView.style.display = 'none';
+                timelineView.style.display = 'block';
+                viewIcon.className = 'bi bi-table';
+                currentView = 'timeline';
+                generateTimeline();
+            } else {
+                tableView.style.display = 'block';
+                timelineView.style.display = 'none';
+                viewIcon.className = 'bi bi-view-list';
+                currentView = 'table';
+            }
+        }
+        
+        // Generate timeline view
+        function generateTimeline() {
+            const container = document.getElementById('timelineContainer');
+            const findings = Array.from(document.querySelectorAll('#findingsTable tbody tr')).filter(row => row.style.display !== 'none');
+            
+            container.innerHTML = '';
+            
+            findings.forEach((row, index) => {
+                const severity = row.dataset.severity;
+                const library = row.dataset.library;
+                const file = row.dataset.file;
+                const line = row.cells[2].textContent;
+                const func = row.cells[4].textContent;
+                
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+                timelineItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">${func} <span class="badge severity-${severity} severity-badge">${severity}</span></h6>
+                            <p class="mb-1 text-muted">${file}:${line}</p>
+                            <small class="library-badge">${library}</small>
+                        </div>
+                        <small class="text-muted">#${index + 1}</small>
+                    </div>
+                `;
+                container.appendChild(timelineItem);
+            });
+        }
+        
+        // Row selection functionality
+        function selectRow(row) {
+            const checkbox = row.querySelector('.row-checkbox');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                row.classList.add('selected');
+                selectedRows.add(row);
+            } else {
+                row.classList.remove('selected');
+                selectedRows.delete(row);
+            }
+            
+            updateSelectAllCheckbox();
+        }
+        
+        // Toggle select all
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const visibleRows = Array.from(document.querySelectorAll('#findingsTable tbody tr')).filter(row => row.style.display !== 'none');
+            
+            visibleRows.forEach(row => {
+                const checkbox = row.querySelector('.row-checkbox');
+                checkbox.checked = selectAllCheckbox.checked;
+                
+                if (selectAllCheckbox.checked) {
+                    row.classList.add('selected');
+                    selectedRows.add(row);
+                } else {
+                    row.classList.remove('selected');
+                    selectedRows.delete(row);
+                }
+            });
+        }
+        
+        // Update select all checkbox state
+        function updateSelectAllCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const visibleRows = Array.from(document.querySelectorAll('#findingsTable tbody tr')).filter(row => row.style.display !== 'none');
+            const checkedRows = visibleRows.filter(row => row.querySelector('.row-checkbox').checked);
+            
+            selectAllCheckbox.indeterminate = checkedRows.length > 0 && checkedRows.length < visibleRows.length;
+            selectAllCheckbox.checked = checkedRows.length === visibleRows.length && visibleRows.length > 0;
         }
         
         // Clear all filters
         function clearFilters() {
-            document.getElementById('searchInput').value = '';
+            document.getElementById('fileSelector').value = '';
             document.getElementById('severityFilter').value = '';
             document.getElementById('libraryFilter').value = '';
             document.getElementById('mutationFilter').value = '';
             filterTable();
         }
         
-        // Export functionality (placeholder)
-        function exportData(format) {
-            alert(`Export to ${format.toUpperCase()} format would be implemented here.\nUse the CLI with --format ${format} to generate ${format.toUpperCase()} reports.`);
+        // Dark mode toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (html.getAttribute('data-bs-theme') === 'dark') {
+                html.setAttribute('data-bs-theme', 'light');
+                themeIcon.className = 'bi bi-moon-stars';
+            } else {
+                html.setAttribute('data-bs-theme', 'dark');
+                themeIcon.className = 'bi bi-sun';
+            }
         }
         
-        // Add event listeners for client-side filtering
-        document.addEventListener('DOMContentLoaded', function() {
-            const filters = ['searchInput', 'severityFilter', 'libraryFilter', 'mutationFilter'];
-            filters.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.addEventListener('input', filterTable);
-                    element.addEventListener('change', filterTable);
-                }
-            });
-        });
-        
-        // Highlight search terms
-        function highlightSearchTerms(searchTerm) {
-            if (!searchTerm) return;
-            
-            const rows = document.querySelectorAll('#findingsTable tbody tr');
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                cells.forEach(cell => {
-                    const text = cell.textContent;
-                    if (text.toLowerCase().includes(searchTerm.toLowerCase())) {
-                        const regex = new RegExp(`(${searchTerm})`, 'gi');
-                        cell.innerHTML = cell.innerHTML.replace(regex, '<span class="search-highlight">$1</span>');
-                    }
-                });
-            });
+        // Select all visible rows
+        function selectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            selectAllCheckbox.checked = true;
+            toggleSelectAll();
         }
     </script>
 </body>
