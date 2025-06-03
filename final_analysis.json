@@ -1,0 +1,778 @@
+{
+  "metadata": {
+    "tool": "datamut",
+    "version": "0.1.0",
+    "generated_at": "2025-06-03T13:56:04.606096",
+    "summary": {
+      "total_findings": 49,
+      "by_severity": {
+        "LOW": 16,
+        "MEDIUM": 29,
+        "CRITICAL": 3,
+        "HIGH": 1
+      },
+      "by_library": {
+        "rfm": 13,
+        "pandas": 20,
+        "sql": 2,
+        "hardcoded": 14
+      },
+      "by_mutation_type": {
+        "data retrieval": 2,
+        "null value filtering": 1,
+        "data type conversion": 3,
+        "data transformation": 6,
+        "multiple mutation functions chained": 2,
+        "database row deletion": 2,
+        "data deletion": 1,
+        "data insertion": 1,
+        "database data insertion": 1,
+        "data aggregation": 3,
+        "dataframe boolean indexing/filtering": 3,
+        "data duplication": 1,
+        "data upload/transmission": 8,
+        "value membership filtering": 1,
+        "magic number": 11,
+        "hardcoded URL/endpoint": 2,
+        "hardcoded file path": 1
+      },
+      "files_analyzed": 1
+    }
+  },
+  "findings": [
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 43,
+      "column_offset": 19,
+      "library": "rfm",
+      "function_name": "getATOMTenorPV01Details_ByDateList",
+      "mutation_type": "data retrieval",
+      "severity": "LOW",
+      "code_snippet": "df_tenorPV01 = getATOMTenorPV01Details_ByDateList(\n        f\"{date:%Y-%m-%d}\", Bahamas_Node, [\"INCLUDE_ALL\"]\n    )",
+      "notes": "Retrieves data from external sources. While not directly mutating, indicates data dependency.\n",
+      "rule_id": "getATOMTenorPV01Details_ByDateList.data_retrieval",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 48,
+      "column_offset": 12,
+      "library": "pandas",
+      "function_name": "notnull",
+      "mutation_type": "null value filtering",
+      "severity": "LOW",
+      "code_snippet": "df = df[df[\"pnl.pn1\"].notnull()]",
+      "notes": "Returns boolean mask for non-null values. Often used for filtering which can reduce dataset size.\n",
+      "rule_id": "notnull.null_value_filtering",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 67,
+      "column_offset": 26,
+      "library": "pandas",
+      "function_name": "astype",
+      "mutation_type": "data type conversion",
+      "severity": "MEDIUM",
+      "code_snippet": "+ pd.to_timedelta(df[\"TTM\"].astype(int), unit=\"D\")",
+      "notes": "Converts data types which can cause data loss (e.g., float to int truncation) or change data interpretation.\n",
+      "rule_id": "astype.data_type_conversion",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 69,
+      "column_offset": 26,
+      "library": "pandas",
+      "function_name": "astype",
+      "mutation_type": "data type conversion",
+      "severity": "MEDIUM",
+      "code_snippet": "df[\"business_date\"] = df[\"business_date\"].astype(str)",
+      "notes": "Converts data types which can cause data loss (e.g., float to int truncation) or change data interpretation.\n",
+      "rule_id": "astype.data_type_conversion",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 70,
+      "column_offset": 26,
+      "library": "pandas",
+      "function_name": "astype",
+      "mutation_type": "data type conversion",
+      "severity": "MEDIUM",
+      "code_snippet": "df[\"maturity_date\"] = df[\"maturity_date\"].astype(str)",
+      "notes": "Converts data types which can cause data loss (e.g., float to int truncation) or change data interpretation.\n",
+      "rule_id": "astype.data_type_conversion",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 72,
+      "column_offset": 16,
+      "library": "pandas",
+      "function_name": "apply",
+      "mutation_type": "data transformation",
+      "severity": "MEDIUM",
+      "code_snippet": "df[\"bkt\"] = df[\"id\"].apply(lambda x: x.split(\"_\")[-1])",
+      "notes": "Applies function to data which can transform values in unpredictable ways depending on the function.\n",
+      "rule_id": "apply.data_transformation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 73,
+      "column_offset": 17,
+      "library": "pandas",
+      "function_name": "apply",
+      "mutation_type": "data transformation",
+      "severity": "MEDIUM",
+      "code_snippet": "df[\"book\"] = df[\"book.bookName\"].apply(lambda x: x.split(\".\")[-1])",
+      "notes": "Applies function to data which can transform values in unpredictable ways depending on the function.\n",
+      "rule_id": "apply.data_transformation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 74,
+      "column_offset": 23,
+      "library": "pandas",
+      "function_name": "apply",
+      "mutation_type": "data transformation",
+      "severity": "MEDIUM",
+      "code_snippet": "df[\"sys_source\"] = df[\"book.bookName\"].apply(lambda x: x.split(\"_\")[0])",
+      "notes": "Applies function to data which can transform values in unpredictable ways depending on the function.\n",
+      "rule_id": "apply.data_transformation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 75,
+      "column_offset": 21,
+      "library": "pandas",
+      "function_name": "apply",
+      "mutation_type": "data transformation",
+      "severity": "MEDIUM",
+      "code_snippet": "df[\"trade_id\"] = df[\"id\"].apply(\n        lambda x: x.split(\"_\")[1] if len(x.split(\"_\")) == 2 else x.split(\"_\")[0]\n    )",
+      "notes": "Applies function to data which can transform values in unpredictable ways depending on the function.\n",
+      "rule_id": "apply.data_transformation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 78,
+      "column_offset": 23,
+      "library": "pandas",
+      "function_name": "apply",
+      "mutation_type": "data transformation",
+      "severity": "MEDIUM",
+      "code_snippet": "df[\"instr_type\"] = df[\"instrument\"].apply(lambda x: x.split(\" \")[0])",
+      "notes": "Applies function to data which can transform values in unpredictable ways depending on the function.\n",
+      "rule_id": "apply.data_transformation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 79,
+      "column_offset": 26,
+      "library": "pandas",
+      "function_name": "apply",
+      "mutation_type": "data transformation",
+      "severity": "MEDIUM",
+      "code_snippet": "df[\"instr_details\"] = df[\"instrument\"].apply(\n        lambda x: x.split(\" \")[1] if len(x.split(\" \")) > 1 else \"\"\n    )",
+      "notes": "Applies function to data which can transform values in unpredictable ways depending on the function.\n",
+      "rule_id": "apply.data_transformation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 115,
+      "column_offset": 8,
+      "library": "pandas",
+      "function_name": "groupby \u2192 sum",
+      "mutation_type": "multiple mutation functions chained",
+      "severity": "MEDIUM",
+      "code_snippet": "df.groupby(\n            [\n                \"business_date\",\n                \"inst_type\",\n                \"trade_id\",\n                \"maturity_date\",\n                \"book\",\n                \"sys_source\",\n                \"ccy\",\n                \"bkt\",\n            ],\n            as_index=False,\n        )\n        .sum()",
+      "notes": "Chain of 2 mutation functions: groupby \u2192 sum. Mutation types: data aggregation. Chained operations can compound data loss and make debugging difficult.",
+      "rule_id": "chain.multiple_mutations",
+      "extra_context": {
+        "chain_length": 2,
+        "functions": [
+          "groupby",
+          "sum"
+        ],
+        "libraries": [
+          "pandas"
+        ],
+        "mutation_types": [
+          "data aggregation"
+        ]
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 141,
+      "column_offset": 4,
+      "library": "rfm",
+      "function_name": "delete_from_db",
+      "mutation_type": "database row deletion",
+      "severity": "CRITICAL",
+      "code_snippet": "delete_from_db(table_name=\"bahamas_atom_pv01\", condition=criteria, env=\"QA\", fast=False)",
+      "notes": "Deletes data from database tables. This is a permanent destructive operation that can result in data loss.\n",
+      "rule_id": "delete_from_db.database_row_deletion",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 146,
+      "column_offset": 4,
+      "library": "rfm",
+      "function_name": "delete_from_db",
+      "mutation_type": "database row deletion",
+      "severity": "CRITICAL",
+      "code_snippet": "delete_from_db(table_name=\"bahamas_atom_pv01\", condition=criteria, env=\"QA\", fast=False)",
+      "notes": "Deletes data from database tables. This is a permanent destructive operation that can result in data loss.\n",
+      "rule_id": "delete_from_db.database_row_deletion",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 147,
+      "column_offset": 4,
+      "library": "sql",
+      "function_name": "DELETE",
+      "mutation_type": "data deletion",
+      "severity": "CRITICAL",
+      "code_snippet": "print(\"Deleted:\", criteria)",
+      "notes": "SQL DELETE operation detected in string literal",
+      "rule_id": "sql.delete",
+      "extra_context": {
+        "sql_text": "Deleted:"
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 149,
+      "column_offset": 4,
+      "library": "sql",
+      "function_name": "INSERT",
+      "mutation_type": "data insertion",
+      "severity": "MEDIUM",
+      "code_snippet": "write_to_db(query=query, values=df.values, env=\"QA\", fast=True)",
+      "notes": "SQL INSERT operation detected in string literal",
+      "rule_id": "sql.insert",
+      "extra_context": {
+        "sql_text": "\n        INSERT INTO bahamas_atom_pv01\n            (business_date, inst_type, trade_id, maturity_dat..."
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 149,
+      "column_offset": 4,
+      "library": "rfm",
+      "function_name": "write_to_db",
+      "mutation_type": "database data insertion",
+      "severity": "MEDIUM",
+      "code_snippet": "write_to_db(query=query, values=df.values, env=\"QA\", fast=True)",
+      "notes": "Writes data to database tables. Can modify existing data or create new records.\n",
+      "rule_id": "write_to_db.database_data_insertion",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 154,
+      "column_offset": 17,
+      "library": "pandas",
+      "function_name": "sum",
+      "mutation_type": "data aggregation",
+      "severity": "MEDIUM",
+      "code_snippet": "total_pv01 = df[\"pv01\"].sum()",
+      "notes": "Aggregates data by summing values. Reduces granularity and loses individual data points.\n",
+      "rule_id": "sum.data_aggregation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 156,
+      "column_offset": 4,
+      "library": "pandas",
+      "function_name": "boolean_indexing",
+      "mutation_type": "dataframe boolean indexing/filtering",
+      "severity": "MEDIUM",
+      "code_snippet": "swap_df = df[df[\"inst_type\"] == \"XCCY Swap\"]",
+      "notes": "Boolean indexing operation on DataFrame 'df' which can filter out rows and reduce dataset size. This is a common pattern for data filtering but should be audited for data loss.",
+      "rule_id": "pandas.boolean_indexing",
+      "extra_context": {
+        "indexed_variable": "df",
+        "target_variable": "swap_df",
+        "has_negation": false
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 157,
+      "column_offset": 17,
+      "library": "pandas",
+      "function_name": "sum",
+      "mutation_type": "data aggregation",
+      "severity": "MEDIUM",
+      "code_snippet": "cad_spread = swap_df[\"pv01\"].sum()",
+      "notes": "Aggregates data by summing values. Reduces granularity and loses individual data points.\n",
+      "rule_id": "sum.data_aggregation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 160,
+      "column_offset": 12,
+      "library": "pandas",
+      "function_name": "copy",
+      "mutation_type": "data duplication",
+      "severity": "LOW",
+      "code_snippet": "df_oq = df.copy()",
+      "notes": "Creates a copy of the DataFrame. While not mutating original, indicates data manipulation workflow. ",
+      "rule_id": "copy.data_duplication",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 161,
+      "column_offset": 22,
+      "library": "pandas",
+      "function_name": "astype \u2192 max",
+      "mutation_type": "multiple mutation functions chained",
+      "severity": "MEDIUM",
+      "code_snippet": "max_tenor = float(df_oq[\"TTM\"].astype(int).max()) / 365",
+      "notes": "Chain of 2 mutation functions: astype \u2192 max. Mutation types: data aggregation, data type conversion. Chained operations can compound data loss and make debugging difficult.",
+      "rule_id": "chain.multiple_mutations",
+      "extra_context": {
+        "chain_length": 2,
+        "functions": [
+          "astype",
+          "max"
+        ],
+        "libraries": [
+          "pandas"
+        ],
+        "mutation_types": [
+          "data aggregation",
+          "data type conversion"
+        ]
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 187,
+      "column_offset": 16,
+      "library": "rfm",
+      "function_name": "getDSRVAR_ByDateRange",
+      "mutation_type": "data retrieval",
+      "severity": "LOW",
+      "code_snippet": "dl_VaR_df = getDSRVAR_ByDateRange(\n        datelist[0], datelist[-1], [Bahamas_Node], [\"MTM Limits\"], 5314\n    )",
+      "notes": "Retrieves data from external sources. While not directly mutating, indicates data dependency.\n",
+      "rule_id": "getDSRVAR_ByDateRange.data_retrieval",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 194,
+      "column_offset": 8,
+      "library": "rfm",
+      "function_name": "lamp_upload",
+      "mutation_type": "data upload/transmission",
+      "severity": "MEDIUM",
+      "code_snippet": "lamp_upload(env, date, 12361, float(total_pv01))",
+      "notes": "Uploads data to external systems. May modify or create records in target systems.\n",
+      "rule_id": "lamp_upload.data_upload/transmission",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 195,
+      "column_offset": 8,
+      "library": "rfm",
+      "function_name": "lamp_upload",
+      "mutation_type": "data upload/transmission",
+      "severity": "MEDIUM",
+      "code_snippet": "lamp_upload(env, date, 12362, float(basis_spread_pv01))",
+      "notes": "Uploads data to external systems. May modify or create records in target systems.\n",
+      "rule_id": "lamp_upload.data_upload/transmission",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 196,
+      "column_offset": 8,
+      "library": "rfm",
+      "function_name": "lamp_upload",
+      "mutation_type": "data upload/transmission",
+      "severity": "MEDIUM",
+      "code_snippet": "lamp_upload(env, date, 12363, float(fund_notional_USD))",
+      "notes": "Uploads data to external systems. May modify or create records in target systems.\n",
+      "rule_id": "lamp_upload.data_upload/transmission",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 197,
+      "column_offset": 8,
+      "library": "rfm",
+      "function_name": "lamp_upload",
+      "mutation_type": "data upload/transmission",
+      "severity": "MEDIUM",
+      "code_snippet": "lamp_upload(env, date, 12364, float(max_tenor))",
+      "notes": "Uploads data to external systems. May modify or create records in target systems.\n",
+      "rule_id": "lamp_upload.data_upload/transmission",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 198,
+      "column_offset": 8,
+      "library": "rfm",
+      "function_name": "lamp_upload",
+      "mutation_type": "data upload/transmission",
+      "severity": "MEDIUM",
+      "code_snippet": "lamp_upload(env, date, 12365, float(net_eq_delta))",
+      "notes": "Uploads data to external systems. May modify or create records in target systems.\n",
+      "rule_id": "lamp_upload.data_upload/transmission",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 199,
+      "column_offset": 8,
+      "library": "rfm",
+      "function_name": "lamp_upload",
+      "mutation_type": "data upload/transmission",
+      "severity": "MEDIUM",
+      "code_snippet": "lamp_upload(env, date, 12366, float(single_name_delta))",
+      "notes": "Uploads data to external systems. May modify or create records in target systems.\n",
+      "rule_id": "lamp_upload.data_upload/transmission",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 200,
+      "column_offset": 8,
+      "library": "rfm",
+      "function_name": "lamp_upload",
+      "mutation_type": "data upload/transmission",
+      "severity": "MEDIUM",
+      "code_snippet": "lamp_upload(env, date, 12365, float(dl_VaR))   # \u2190 duplicated ID in original",
+      "notes": "Uploads data to external systems. May modify or create records in target systems.\n",
+      "rule_id": "lamp_upload.data_upload/transmission",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 213,
+      "column_offset": 4,
+      "library": "pandas",
+      "function_name": "boolean_indexing",
+      "mutation_type": "dataframe boolean indexing/filtering",
+      "severity": "MEDIUM",
+      "code_snippet": "df_baha = df_secfin[df_secfin[\"book\"] == baha_book]",
+      "notes": "Boolean indexing operation on DataFrame 'df_secfin' which can filter out rows and reduce dataset size. This is a common pattern for data filtering but should be audited for data loss.",
+      "rule_id": "pandas.boolean_indexing",
+      "extra_context": {
+        "indexed_variable": "df_secfin",
+        "target_variable": "df_baha",
+        "has_negation": false
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 216,
+      "column_offset": 22,
+      "library": "pandas",
+      "function_name": "isin",
+      "mutation_type": "value membership filtering",
+      "severity": "LOW",
+      "code_snippet": "internal_filter = df_baha[\"Internal/CCP Flag\"].isin(internal_flag)",
+      "notes": "Returns boolean mask for values in specified list. Often used for filtering which can reduce dataset size.\n",
+      "rule_id": "isin.value_membership_filtering",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 219,
+      "column_offset": 4,
+      "library": "pandas",
+      "function_name": "boolean_indexing",
+      "mutation_type": "dataframe boolean indexing/filtering",
+      "severity": "HIGH",
+      "code_snippet": "df_baha = df_baha[~internal_filter]",
+      "notes": "Negative boolean indexing (using ~) on DataFrame 'df_baha' which explicitly drops/excludes rows from the dataset. This can result in significant data loss and should be carefully reviewed.",
+      "rule_id": "pandas.boolean_indexing",
+      "extra_context": {
+        "indexed_variable": "df_baha",
+        "target_variable": "df_baha",
+        "has_negation": true
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 222,
+      "column_offset": 17,
+      "library": "pandas",
+      "function_name": "sum",
+      "mutation_type": "data aggregation",
+      "severity": "MEDIUM",
+      "code_snippet": "collateral = df_baha[\"collateral\"].sum()",
+      "notes": "Aggregates data by summing values. Reduces granularity and loses individual data points.\n",
+      "rule_id": "sum.data_aggregation",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 226,
+      "column_offset": 8,
+      "library": "rfm",
+      "function_name": "lamp_upload",
+      "mutation_type": "data upload/transmission",
+      "severity": "MEDIUM",
+      "code_snippet": "lamp_upload(env, date, 12367, float(collateral))",
+      "notes": "Uploads data to external systems. May modify or create records in target systems.\n",
+      "rule_id": "lamp_upload.data_upload/transmission",
+      "extra_context": {}
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 161,
+      "column_offset": 56,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "max_tenor = float(df_oq[\"TTM\"].astype(int).max()) / 365",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "365",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 163,
+      "column_offset": 4,
+      "library": "hardcoded",
+      "function_name": "url_endpoint",
+      "mutation_type": "hardcoded URL/endpoint",
+      "severity": "MEDIUM",
+      "code_snippet": "base_url = \"https://ends.cs.rbc.com/v1/marketdata/RATS-TOR/\"",
+      "notes": "Hardcoded URLs make it difficult to switch between environments.\nUse configuration files or environment variables.\n",
+      "rule_id": "url_endpoint.hardcoded_URL/endpoint",
+      "extra_context": {
+        "detected_value": "https://ends.cs.rbc.com/v1/marketdata/RATS-TOR/",
+        "category": "url_endpoint",
+        "variable_name": "base_url"
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 163,
+      "column_offset": 15,
+      "library": "hardcoded",
+      "function_name": "url_endpoint",
+      "mutation_type": "hardcoded URL/endpoint",
+      "severity": "MEDIUM",
+      "code_snippet": "base_url = \"https://ends.cs.rbc.com/v1/marketdata/RATS-TOR/\"",
+      "notes": "Hardcoded URLs make it difficult to switch between environments.\nUse configuration files or environment variables.\n",
+      "rule_id": "url_endpoint.hardcoded_URL/endpoint",
+      "extra_context": {
+        "detected_value": "https://ends.cs.rbc.com/v1/marketdata/RATS-TOR/",
+        "category": "url_endpoint",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 177,
+      "column_offset": 25,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "fund_notional_CAD = -3_500_000_000",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "3500000000",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 188,
+      "column_offset": 67,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "datelist[0], datelist[-1], [Bahamas_Node], [\"MTM Limits\"], 5314",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "5314",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 194,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12361, float(total_pv01))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12361",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 195,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12362, float(basis_spread_pv01))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12362",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 196,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12363, float(fund_notional_USD))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12363",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 197,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12364, float(max_tenor))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12364",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 198,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12365, float(net_eq_delta))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12365",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 199,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12366, float(single_name_delta))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12366",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 200,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12365, float(dl_VaR))   # \u2190 duplicated ID in original",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12365",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 205,
+      "column_offset": 4,
+      "library": "hardcoded",
+      "function_name": "file_path",
+      "mutation_type": "hardcoded file path",
+      "severity": "MEDIUM",
+      "code_snippet": "path = (\n        r\"\\\\castvsfg6.fg.rbc.com\\UR2$\\PROD\\data\\output\\SFRS_PDR\"\n        fr\"\\{date:%Y%m%d}\\SECFINPosDetails_{date:%Y%m%d}.csv\"\n    )",
+      "notes": "Hardcoded file paths reduce portability and maintainability.\nConsider using relative paths or configuration.\n",
+      "rule_id": "file_path.hardcoded_file_path",
+      "extra_context": {
+        "detected_value": "r\"\\\\castvsfg6.fg.rbc.com\\UR2$\\PROD\\data\\output\\SFRS_PDR\"",
+        "category": "file_path",
+        "variable_name": "path"
+      }
+    },
+    {
+      "file_path": "/Users/r.hira/Projects/auditr/tests/t.py",
+      "line_number": 226,
+      "column_offset": 31,
+      "library": "hardcoded",
+      "function_name": "magic_number",
+      "mutation_type": "magic number",
+      "severity": "LOW",
+      "code_snippet": "lamp_upload(env, date, 12367, float(collateral))",
+      "notes": "Magic numbers reduce code readability and maintainability.\nConsider using named constants.\n",
+      "rule_id": "magic_number.magic_number",
+      "extra_context": {
+        "detected_value": "12367",
+        "category": "magic_number",
+        "variable_name": null
+      }
+    }
+  ]
+}

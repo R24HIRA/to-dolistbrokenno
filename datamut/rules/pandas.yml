@@ -191,4 +191,202 @@ rules:
       arg_present:
         name: inplace
         value: true
-        set_severity: MEDIUM 
+        set_severity: MEDIUM
+
+  - func: notnull
+    mutation: "null value filtering"
+    default_severity: LOW
+    notes: |
+      Returns boolean mask for non-null values. Often used for filtering which can reduce dataset size.
+
+  - func: isnull
+    mutation: "null value filtering"  
+    default_severity: LOW
+    notes: |
+      Returns boolean mask for null values. Often used for filtering which can reduce dataset size.
+
+  - func: notna
+    mutation: "null value filtering"
+    default_severity: LOW
+    notes: |
+      Returns boolean mask for non-null values. Often used for filtering which can reduce dataset size.
+
+  - func: isna
+    mutation: "null value filtering"
+    default_severity: LOW
+    notes: |
+      Returns boolean mask for null values. Often used for filtering which can reduce dataset size.
+
+  - func: astype
+    mutation: "data type conversion"
+    default_severity: MEDIUM
+    notes: |
+      Converts data types which can cause data loss (e.g., float to int truncation) or change data interpretation.
+
+  - func: sum
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by summing values. Reduces granularity and loses individual data points.
+
+  - func: mean
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by calculating mean. Reduces granularity and loses individual data points.
+
+  - func: median
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by calculating median. Reduces granularity and loses individual data points.
+
+  - func: std
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by calculating standard deviation. Reduces granularity and loses individual data points.
+
+  - func: var
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by calculating variance. Reduces granularity and loses individual data points.
+
+  - func: min
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by finding minimum value. Reduces granularity and loses individual data points.
+
+  - func: max
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by finding maximum value. Reduces granularity and loses individual data points.
+
+  - func: count
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by counting non-null values. Reduces granularity and loses individual data points.
+
+  - func: size
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by counting all values. Reduces granularity and loses individual data points.
+
+  - func: nunique
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by counting unique values. Reduces granularity and loses individual data points.
+
+  - func: first
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by taking first value. Reduces granularity and loses other data points.
+
+  - func: last
+    mutation: "data aggregation"
+    default_severity: MEDIUM
+    notes: |
+      Aggregates data by taking last value. Reduces granularity and loses other data points.
+
+  - func: head
+    mutation: "data sampling"
+    default_severity: MEDIUM
+    notes: |
+      Returns first n rows, potentially excluding significant portions of the dataset.
+
+  - func: tail
+    mutation: "data sampling"
+    default_severity: MEDIUM
+    notes: |
+      Returns last n rows, potentially excluding significant portions of the dataset.
+
+  - func: apply
+    mutation: "data transformation"
+    default_severity: MEDIUM
+    notes: |
+      Applies function to data which can transform values in unpredictable ways depending on the function.
+
+  - func: map
+    mutation: "data transformation"
+    default_severity: MEDIUM
+    notes: |
+      Maps values using a dictionary, Series, or function which can transform the data.
+
+  - func: transform
+    mutation: "data transformation"
+    default_severity: MEDIUM
+    notes: |
+      Applies function to transform data while preserving shape, but values may change significantly.
+
+  - func: iloc
+    mutation: "row/column selection"
+    default_severity: MEDIUM
+    notes: |
+      Selects specific rows/columns by integer position. Can reduce dataset size by excluding data.
+
+  - func: loc
+    mutation: "row/column selection"
+    default_severity: MEDIUM
+    notes: |
+      Selects specific rows/columns by labels. Can reduce dataset size by excluding data.
+
+  - func: isin
+    mutation: "value membership filtering"
+    default_severity: LOW
+    notes: |
+      Returns boolean mask for values in specified list. Often used for filtering which can reduce dataset size.
+
+  - func: where
+    mutation: "conditional data selection"
+    default_severity: MEDIUM
+    notes: |
+      Replaces values that don't meet condition with NaN or specified value.
+
+  - func: mask
+    mutation: "conditional data masking"
+    default_severity: MEDIUM
+    notes: |
+      Replaces values that meet condition with NaN or specified value.
+
+  - func: query
+    mutation: "data filtering"
+    default_severity: MEDIUM
+    notes: |
+      Filters DataFrame using query expression. Can significantly reduce dataset size.
+
+  - func: eval
+    mutation: "expression evaluation"
+    default_severity: MEDIUM
+    notes: |
+      Evaluates string expressions which can modify data in unpredictable ways.
+
+  - func: clip
+    mutation: "value clipping"
+    default_severity: MEDIUM
+    notes: |
+      Clips values to specified bounds, potentially changing extreme values.
+
+  - func: round
+    mutation: "value rounding"
+    default_severity: LOW
+    notes: |
+      Rounds values to specified decimal places, potentially losing precision.
+
+  - func: abs
+    mutation: "absolute value conversion"
+    default_severity: LOW
+    notes: |
+      Converts all values to their absolute values, losing sign information.
+
+  - func: copy
+    mutation: "data duplication"
+    default_severity: LOW
+    notes: |
+      Creates a copy of the DataFrame. While not mutating original, indicates data manipulation workflow. 

@@ -1,0 +1,40 @@
+meta:
+  library: rfm
+  alias_regex: "^(rfm)$"
+
+rules:
+  - func: write_to_db
+    mutation: "database data insertion"
+    default_severity: MEDIUM
+    notes: |
+      Writes data to database tables. Can modify existing data or create new records.
+
+  - func: delete_from_db
+    mutation: "database row deletion"
+    default_severity: CRITICAL
+    notes: |
+      Deletes data from database tables. This is a permanent destructive operation that can result in data loss.
+
+  - func: lamp_upload
+    mutation: "data upload/transmission"
+    default_severity: MEDIUM
+    notes: |
+      Uploads data to external systems. May modify or create records in target systems.
+
+  - func: getDSRVAR_ByDateRange
+    mutation: "data retrieval"
+    default_severity: LOW
+    notes: |
+      Retrieves data from external sources. While not directly mutating, indicates data dependency.
+
+  - func: getATOMTenorPV01Details_ByDateList
+    mutation: "data retrieval"
+    default_severity: LOW
+    notes: |
+      Retrieves data from external sources. While not directly mutating, indicates data dependency.
+
+  - func: getDSRVAR_ByDateList
+    mutation: "data retrieval"
+    default_severity: LOW
+    notes: |
+      Retrieves data from external sources. While not directly mutating, indicates data dependency. 

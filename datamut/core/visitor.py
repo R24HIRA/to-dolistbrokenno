@@ -53,6 +53,10 @@ class MutationVisitor(cst.CSTVisitor):
                         library, function_name = func_info
                         if library in ['pandas', 'numpy']:
                             self.variable_types[var_name] = library
+                
+                # Check for boolean indexing patterns: df = df[condition]
+                elif isinstance(node.value, cst.Subscript):
+                    self._check_boolean_indexing(node, var_name)
     
     def visit_Call(self, node: cst.Call) -> None:
         """Visit function calls to detect mutations."""
@@ -163,6 +167,26 @@ class MutationVisitor(cst.CSTVisitor):
                     return library, function_name
                 return resolved, function_name
             
+            elif isinstance(func.value, cst.Subscript):
+                # obj[key].method() - check if obj is a tracked variable
+                if isinstance(func.value.value, cst.Name):
+                    obj_name = func.value.value.value
+                    if obj_name in self.variable_types:
+                        library = self.variable_types[obj_name]
+                        return library, function_name
+                    
+                    # Check if it's an import alias
+                    resolved = self.context.resolve_name(obj_name)
+                    library = self.rule_loader.resolve_alias(resolved)
+                    if library:
+                        return library, function_name
+                    
+                    # For common patterns, infer from the object name
+                    if obj_name.startswith(('df', 'data', 'frame')):
+                        return 'pandas', function_name
+                    elif obj_name.startswith(('arr', 'array', 'np_')):
+                        return 'numpy', function_name
+            
             elif isinstance(func.value, cst.Call):
                 # Chained method call: obj.method1().method2()
                 # For chained calls, we need to infer the library from the chain
@@ -213,6 +237,29 @@ class MutationVisitor(cst.CSTVisitor):
                     return 'pandas'
                 elif obj_name.startswith(('arr', 'array', 'np_')):
                     return 'numpy'
+                
+                return None
+            
+            elif isinstance(current.func.value, cst.Subscript):
+                # Handle obj[key] pattern - check the base object
+                if isinstance(current.func.value.value, cst.Name):
+                    obj_name = current.func.value.value.value
+                    
+                    # Check if it's a tracked variable
+                    if obj_name in self.variable_types:
+                        return self.variable_types[obj_name]
+                    
+                    # Check if it's an import alias
+                    resolved = self.context.resolve_name(obj_name)
+                    library = self.rule_loader.resolve_alias(resolved)
+                    if library:
+                        return library
+                    
+                    # For common patterns, infer from the object name
+                    if obj_name.startswith(('df', 'data', 'frame')):
+                        return 'pandas'
+                    elif obj_name.startswith(('arr', 'array', 'np_')):
+                        return 'numpy'
                 
                 return None
             
@@ -569,4 +616,63 @@ class MutationVisitor(cst.CSTVisitor):
         wrapper = cst.metadata.MetadataWrapper(tree)
         wrapper.visit(hardcoded_visitor)
         
-        return hardcoded_visitor.findings 
+        return hardcoded_visitor.findings
+
+    def _check_boolean_indexing(self, node: cst.Assign, var_name: str) -> None:
+        """Check for boolean indexing patterns that filter data."""
+        value = node.value
+        if not isinstance(value, cst.Subscript):
+            return
+        
+        # Check if this is indexing a DataFrame variable
+        if isinstance(value.value, cst.Name):
+            indexed_var = value.value.value
+            
+            # Check if the indexed variable is a pandas DataFrame
+            if (indexed_var in self.variable_types and 
+                self.variable_types[indexed_var] == 'pandas'):
+                
+                # This is likely boolean indexing on a DataFrame
+                position = self._get_position(node)
+                if not position:
+                    position = (1, 0)
+                
+                line_number, column_offset = position
+                code_snippet = self._extract_code_snippet(node, line_number)
+                
+                # Determine if this is likely filtering (reduces data)
+                severity = Severity.MEDIUM
+                mutation_type = "dataframe boolean indexing/filtering"
+                notes = (f"Boolean indexing operation on DataFrame '{indexed_var}' which can "
+                        f"filter out rows and reduce dataset size. "
+                        f"This is a common pattern for data filtering but should be audited for data loss.")
+                
+                # Check if it's a negative filter (using ~) which often drops data
+                if '~' in code_snippet:
+                    severity = Severity.HIGH
+                    notes = (f"Negative boolean indexing (using ~) on DataFrame '{indexed_var}' "
+                            f"which explicitly drops/excludes rows from the dataset. "
+                            f"This can result in significant data loss and should be carefully reviewed.")
+                
+                finding = Finding(
+                    file_path=self.file_path,
+                    line_number=line_number,
+                    column_offset=column_offset,
+                    library="pandas",
+                    function_name="boolean_indexing",
+                    mutation_type=mutation_type,
+                    severity=severity,
+                    code_snippet=code_snippet,
+                    notes=notes,
+                    rule_id="pandas.boolean_indexing",
+                    extra_context={
+                        'indexed_variable': indexed_var,
+                        'target_variable': var_name,
+                        'has_negation': '~' in code_snippet
+                    }
+                )
+                
+                self.findings.append(finding)
+                
+                # Update variable type tracking
+                self.variable_types[var_name] = 'pandas' 

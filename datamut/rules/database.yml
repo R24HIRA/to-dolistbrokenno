@@ -1,0 +1,64 @@
+meta:
+  library: database
+  alias_regex: "^(db|database)$"
+
+rules:
+  - func: delete_from_db
+    mutation: "database row deletion"
+    default_severity: CRITICAL
+    notes: |
+      Deletes data from database tables. This is a permanent destructive operation that can result in data loss.
+
+  - func: write_to_db
+    mutation: "database data insertion"
+    default_severity: MEDIUM
+    notes: |
+      Writes data to database tables. Can modify existing data or create new records.
+
+  - func: update_db
+    mutation: "database data update"
+    default_severity: HIGH
+    notes: |
+      Updates existing records in database tables. Modifies data permanently.
+
+  - func: insert_into_db
+    mutation: "database data insertion"
+    default_severity: MEDIUM
+    notes: |
+      Inserts new records into database tables.
+
+  - func: truncate_table
+    mutation: "database table truncation"
+    default_severity: CRITICAL
+    notes: |
+      Removes all data from a database table. This is a destructive operation.
+
+  - func: drop_table
+    mutation: "database table deletion"
+    default_severity: CRITICAL
+    notes: |
+      Permanently removes an entire database table and all its data.
+
+  - func: execute
+    mutation: "database query execution"
+    default_severity: HIGH
+    notes: |
+      Executes arbitrary SQL commands which may modify or delete data.
+
+  - func: executemany
+    mutation: "database batch operation"
+    default_severity: HIGH
+    notes: |
+      Executes multiple SQL commands which may modify or delete data in batch.
+
+  - func: commit
+    mutation: "database transaction commit"
+    default_severity: MEDIUM
+    notes: |
+      Commits pending database changes, making them permanent.
+
+  - func: rollback
+    mutation: "database transaction rollback"
+    default_severity: MEDIUM
+    notes: |
+      Rolls back pending database changes, potentially losing recent modifications. 
