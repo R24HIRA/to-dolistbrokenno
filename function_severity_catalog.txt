@@ -1,0 +1,753 @@
+DATAMUT FUNCTION SEVERITY CATALOG
+=====================================
+
+This file contains all functions detected by the DataMut analysis tool, organized by library,
+with their severity levels and descriptions.
+
+=====================================
+PANDAS LIBRARY FUNCTIONS
+=====================================
+
+Function: join
+Severity: MEDIUM
+Mutation: row-set merge
+Description: Can silently drop rows when how='inner'. Consider using merge() with validate parameter for better control.
+
+Function: merge
+Severity: MEDIUM
+Mutation: row-set merge
+Description: Can silently drop or duplicate rows depending on join type and key uniqueness. Use validate parameter to catch unexpected behavior.
+
+Function: drop
+Severity: HIGH (CRITICAL if inplace=True)
+Mutation: row/col drop
+Description: Permanently removes data from DataFrame. Use with caution in production.
+
+Function: drop_duplicates
+Severity: MEDIUM (HIGH if inplace=True)
+Mutation: row deduplication
+Description: Removes duplicate rows which may be legitimate data in some contexts.
+
+Function: dropna
+Severity: MEDIUM (HIGH if inplace=True)
+Mutation: null value removal
+Description: Removes rows/columns with missing values. May significantly reduce dataset size.
+
+Function: fillna
+Severity: LOW (MEDIUM if inplace=True)
+Mutation: null value imputation
+Description: Replaces missing values with specified values. Can introduce bias if not done carefully.
+
+Function: replace
+Severity: MEDIUM (HIGH if inplace=True)
+Mutation: value replacement
+Description: Replaces specified values throughout the DataFrame. Can have wide-reaching effects.
+
+Function: sort_values
+Severity: LOW (MEDIUM if inplace=True)
+Mutation: row reordering
+Description: Changes the order of rows in the DataFrame.
+
+Function: reset_index
+Severity: LOW (MEDIUM if inplace=True)
+Mutation: index modification
+Description: Resets the DataFrame index, potentially losing index information.
+
+Function: set_index
+Severity: LOW (MEDIUM if inplace=True)
+Mutation: index modification
+Description: Changes the DataFrame index, affecting row identification.
+
+Function: concat
+Severity: MEDIUM
+Mutation: data concatenation
+Description: Combines multiple DataFrames. Can introduce duplicate indices or misaligned data.
+
+Function: append
+Severity: MEDIUM (HIGH if ignore_index=False)
+Mutation: row addition
+Description: Adds rows to DataFrame. Deprecated in favor of concat().
+
+Function: assign
+Severity: LOW
+Mutation: column assignment
+Description: Adds or modifies columns in the DataFrame.
+
+Function: insert
+Severity: LOW
+Mutation: column insertion
+Description: Inserts a new column at a specific position.
+
+Function: pop
+Severity: MEDIUM
+Mutation: column removal
+Description: Removes and returns a column from the DataFrame.
+
+Function: sample
+Severity: MEDIUM
+Mutation: data sampling
+Description: Returns a random sample of rows. Results are non-deterministic unless random_state is set.
+
+Function: groupby
+Severity: LOW
+Mutation: data aggregation
+Description: Groups data for aggregation. The aggregation functions applied may mutate understanding of the data.
+
+Function: pivot
+Severity: MEDIUM
+Mutation: data reshaping
+Description: Reshapes data from long to wide format. Can create sparse matrices with many NaN values.
+
+Function: pivot_table
+Severity: MEDIUM
+Mutation: data aggregation/reshaping
+Description: Creates a pivot table with aggregation. May lose granular data through aggregation.
+
+Function: melt
+Severity: MEDIUM
+Mutation: data reshaping
+Description: Reshapes data from wide to long format. Changes the fundamental structure of the data.
+
+Function: transpose
+Severity: MEDIUM
+Mutation: data transposition
+Description: Transposes the DataFrame, swapping rows and columns.
+
+Function: reindex
+Severity: MEDIUM
+Mutation: index/column reordering
+Description: Reorders or adds/removes indices. Can introduce NaN values for missing indices.
+
+Function: rename
+Severity: LOW (MEDIUM if inplace=True)
+Mutation: label modification
+Description: Renames columns or index labels.
+
+Function: notnull
+Severity: LOW
+Mutation: null value filtering
+Description: Returns boolean mask for non-null values. Often used for filtering which can reduce dataset size.
+
+Function: isnull
+Severity: LOW
+Mutation: null value filtering
+Description: Returns boolean mask for null values. Often used for filtering which can reduce dataset size.
+
+Function: notna
+Severity: LOW
+Mutation: null value filtering
+Description: Returns boolean mask for non-null values. Often used for filtering which can reduce dataset size.
+
+Function: isna
+Severity: LOW
+Mutation: null value filtering
+Description: Returns boolean mask for null values. Often used for filtering which can reduce dataset size.
+
+Function: astype
+Severity: MEDIUM
+Mutation: data type conversion
+Description: Converts data types which can cause data loss (e.g., float to int truncation) or change data interpretation.
+
+Function: sum
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by summing values. Reduces granularity and loses individual data points.
+
+Function: mean
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by calculating mean. Reduces granularity and loses individual data points.
+
+Function: median
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by calculating median. Reduces granularity and loses individual data points.
+
+Function: std
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by calculating standard deviation. Reduces granularity and loses individual data points.
+
+Function: var
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by calculating variance. Reduces granularity and loses individual data points.
+
+Function: min
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by finding minimum value. Reduces granularity and loses individual data points.
+
+Function: max
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by finding maximum value. Reduces granularity and loses individual data points.
+
+Function: count
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by counting non-null values. Reduces granularity and loses individual data points.
+
+Function: size
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by counting all values. Reduces granularity and loses individual data points.
+
+Function: nunique
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by counting unique values. Reduces granularity and loses individual data points.
+
+Function: first
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by taking first value. Reduces granularity and loses other data points.
+
+Function: last
+Severity: MEDIUM
+Mutation: data aggregation
+Description: Aggregates data by taking last value. Reduces granularity and loses other data points.
+
+Function: head
+Severity: MEDIUM
+Mutation: data sampling
+Description: Returns first n rows, potentially excluding significant portions of the dataset.
+
+Function: tail
+Severity: MEDIUM
+Mutation: data sampling
+Description: Returns last n rows, potentially excluding significant portions of the dataset.
+
+Function: apply
+Severity: MEDIUM
+Mutation: data transformation
+Description: Applies function to data which can transform values in unpredictable ways depending on the function.
+
+Function: map
+Severity: MEDIUM
+Mutation: data transformation
+Description: Maps values using a dictionary, Series, or function which can transform the data.
+
+Function: transform
+Severity: MEDIUM
+Mutation: data transformation
+Description: Applies function to transform data while preserving shape, but values may change significantly.
+
+Function: iloc
+Severity: MEDIUM
+Mutation: row/column selection
+Description: Selects specific rows/columns by integer position. Can reduce dataset size by excluding data.
+
+Function: loc
+Severity: MEDIUM
+Mutation: row/column selection
+Description: Selects specific rows/columns by labels. Can reduce dataset size by excluding data.
+
+Function: isin
+Severity: LOW
+Mutation: value membership filtering
+Description: Returns boolean mask for values in specified list. Often used for filtering which can reduce dataset size.
+
+Function: where
+Severity: MEDIUM
+Mutation: conditional data selection
+Description: Replaces values that don't meet condition with NaN or specified value.
+
+Function: mask
+Severity: MEDIUM
+Mutation: conditional data masking
+Description: Replaces values that meet condition with NaN or specified value.
+
+Function: query
+Severity: MEDIUM
+Mutation: data filtering
+Description: Filters DataFrame using query expression. Can significantly reduce dataset size.
+
+Function: eval
+Severity: MEDIUM
+Mutation: expression evaluation
+Description: Evaluates string expressions which can modify data in unpredictable ways.
+
+Function: clip
+Severity: MEDIUM
+Mutation: value clipping
+Description: Clips values to specified bounds, potentially changing extreme values.
+
+Function: round
+Severity: LOW
+Mutation: value rounding
+Description: Rounds values to specified decimal places, potentially losing precision.
+
+Function: abs
+Severity: LOW
+Mutation: absolute value conversion
+Description: Converts all values to their absolute values, losing sign information.
+
+Function: copy
+Severity: LOW
+Mutation: data duplication
+Description: Creates a copy of the DataFrame. While not mutating original, indicates data manipulation workflow.
+
+=====================================
+SQL LIBRARY FUNCTIONS
+=====================================
+
+Function: INSERT
+Severity: MEDIUM
+Mutation: data insertion
+Description: Adds new rows to a table. Can significantly increase table size and affect performance.
+
+Function: UPDATE
+Severity: HIGH
+Mutation: data update
+Description: Modifies existing data in a table. Can have wide-reaching effects if WHERE clause is broad.
+
+Function: DELETE
+Severity: CRITICAL
+Mutation: data deletion
+Description: Removes rows from a table. Data loss is permanent unless backed up.
+
+Function: DROP
+Severity: CRITICAL
+Mutation: schema/data drop
+Description: Removes entire tables, views, or other database objects. Causes permanent data loss.
+
+Function: TRUNCATE
+Severity: CRITICAL
+Mutation: data truncation
+Description: Removes all rows from a table quickly. Cannot be rolled back in some databases.
+
+Function: ALTER
+Severity: HIGH
+Mutation: schema alteration
+Description: Modifies table structure, constraints, or other schema elements. Can affect data integrity.
+
+Function: CREATE
+Severity: MEDIUM
+Mutation: schema creation
+Description: Creates new database objects like tables, indexes, or views. Changes database schema.
+
+Function: MERGE
+Severity: MEDIUM
+Mutation: data merge
+Description: Combines INSERT, UPDATE, and DELETE operations. Complex logic can have unexpected results.
+
+Function: UPSERT
+Severity: MEDIUM
+Mutation: data upsert
+Description: Insert or update operation. Behavior depends on whether record already exists.
+
+Function: REPLACE
+Severity: HIGH
+Mutation: data replacement
+Description: Replaces existing rows or inserts new ones. Can overwrite data unexpectedly.
+
+Function: LOAD
+Severity: MEDIUM
+Mutation: bulk data loading
+Description: Loads large amounts of data into tables. Can significantly impact database performance.
+
+Function: IMPORT
+Severity: MEDIUM
+Mutation: data import
+Description: Imports data from external sources. May introduce data quality issues.
+
+Function: EXPORT
+Severity: LOW
+Mutation: data export
+Description: Exports data from database. Generally read-only but may affect performance.
+
+Function: COPY
+Severity: MEDIUM
+Mutation: data copying
+Description: Copies data between tables or from/to files. Can duplicate or move large amounts of data.
+
+Function: BACKUP
+Severity: LOW
+Mutation: database backup
+Description: Creates backup of database or tables. Generally safe but may lock resources.
+
+Function: RESTORE
+Severity: CRITICAL
+Mutation: database restore
+Description: Restores database from backup. Overwrites current data with backup data.
+
+Function: REINDEX
+Severity: MEDIUM
+Mutation: index rebuilding
+Description: Rebuilds database indexes. Can affect query performance during operation.
+
+Function: VACUUM
+Severity: LOW
+Mutation: database maintenance
+Description: Reclaims storage and updates statistics. Generally safe maintenance operation.
+
+Function: ANALYZE
+Severity: LOW
+Mutation: statistics update
+Description: Updates table statistics for query optimization. Generally safe operation.
+
+Function: CLUSTER
+Severity: MEDIUM
+Mutation: table clustering
+Description: Physically reorders table data. Can improve performance but locks table during operation.
+
+=====================================
+NUMPY LIBRARY FUNCTIONS
+=====================================
+
+Function: delete
+Severity: HIGH
+Mutation: element removal
+Description: Removes elements from an array. Creates a new array with elements deleted.
+
+Function: insert
+Severity: MEDIUM
+Mutation: element insertion
+Description: Inserts elements into an array. Creates a new array with elements added.
+
+Function: append
+Severity: MEDIUM
+Mutation: element addition
+Description: Appends elements to the end of an array. Creates a new array.
+
+Function: concatenate
+Severity: MEDIUM
+Mutation: array concatenation
+Description: Joins arrays along an existing axis. Can change array dimensions.
+
+Function: hstack
+Severity: MEDIUM
+Mutation: horizontal stacking
+Description: Stacks arrays horizontally (column-wise). Changes array structure.
+
+Function: vstack
+Severity: MEDIUM
+Mutation: vertical stacking
+Description: Stacks arrays vertically (row-wise). Changes array structure.
+
+Function: dstack
+Severity: MEDIUM
+Mutation: depth stacking
+Description: Stacks arrays depth-wise (along third axis). Changes array structure.
+
+Function: split
+Severity: MEDIUM
+Mutation: array splitting
+Description: Splits an array into multiple sub-arrays. Changes data organization.
+
+Function: hsplit
+Severity: MEDIUM
+Mutation: horizontal splitting
+Description: Splits an array horizontally. Changes data organization.
+
+Function: vsplit
+Severity: MEDIUM
+Mutation: vertical splitting
+Description: Splits an array vertically. Changes data organization.
+
+Function: dsplit
+Severity: MEDIUM
+Mutation: depth splitting
+Description: Splits an array depth-wise. Changes data organization.
+
+Function: reshape
+Severity: MEDIUM
+Mutation: shape modification
+Description: Changes the shape of an array without changing its data. Can affect data interpretation.
+
+Function: resize
+Severity: HIGH
+Mutation: array resizing
+Description: Changes the size and shape of an array. May truncate or repeat data.
+
+Function: transpose
+Severity: MEDIUM
+Mutation: array transposition
+Description: Transposes the array, reversing or permuting axes.
+
+Function: swapaxes
+Severity: MEDIUM
+Mutation: axis swapping
+Description: Swaps two axes of an array. Changes data layout and interpretation.
+
+Function: moveaxis
+Severity: MEDIUM
+Mutation: axis reordering
+Description: Moves axes of an array to new positions. Changes data layout.
+
+Function: rollaxis
+Severity: MEDIUM
+Mutation: axis rolling
+Description: Rolls the specified axis backwards. Changes data layout.
+
+Function: squeeze
+Severity: LOW
+Mutation: dimension removal
+Description: Removes single-dimensional entries from array shape.
+
+Function: expand_dims
+Severity: LOW
+Mutation: dimension addition
+Description: Expands the shape of an array by adding new axes.
+
+Function: flatten
+Severity: MEDIUM
+Mutation: array flattening
+Description: Returns a flattened copy of the array. Loses multidimensional structure.
+
+Function: ravel
+Severity: MEDIUM
+Mutation: array flattening
+Description: Returns a flattened array. May return a view or copy.
+
+Function: sort
+Severity: LOW
+Mutation: element reordering
+Description: Sorts an array. Changes element order but preserves all data.
+
+Function: argsort
+Severity: LOW
+Mutation: index reordering
+Description: Returns indices that would sort an array. Provides reordering information.
+
+Function: partition
+Severity: LOW
+Mutation: element partitioning
+Description: Partitions array elements around a pivot. Changes element order.
+
+Function: argpartition
+Severity: LOW
+Mutation: index partitioning
+Description: Returns indices that would partition an array. Provides reordering information.
+
+Function: unique
+Severity: MEDIUM
+Mutation: duplicate removal
+Description: Returns unique elements of an array. May reduce array size significantly.
+
+Function: repeat
+Severity: MEDIUM
+Mutation: element duplication
+Description: Repeats elements of an array. Increases array size and may introduce redundancy.
+
+Function: tile
+Severity: MEDIUM
+Mutation: array tiling
+Description: Tiles an array by repeating it. Significantly increases array size.
+
+Function: roll
+Severity: LOW
+Mutation: element shifting
+Description: Shifts elements along an axis. Changes element positions but preserves all data.
+
+Function: flip
+Severity: LOW
+Mutation: element reversal
+Description: Reverses the order of elements along an axis.
+
+Function: fliplr
+Severity: LOW
+Mutation: left-right flip
+Description: Flips array left to right (reverses columns).
+
+Function: flipud
+Severity: LOW
+Mutation: up-down flip
+Description: Flips array up to down (reverses rows).
+
+Function: rot90
+Severity: LOW
+Mutation: array rotation
+Description: Rotates an array by 90 degrees in the plane specified by axes.
+
+Function: take
+Severity: MEDIUM
+Mutation: element selection
+Description: Takes elements from an array along an axis. May reduce array size.
+
+Function: choose
+Severity: MEDIUM
+Mutation: conditional selection
+Description: Constructs array from index array and set of arrays to choose from.
+
+Function: compress
+Severity: MEDIUM
+Mutation: conditional filtering
+Description: Returns selected slices of an array along given axis using boolean condition.
+
+Function: extract
+Severity: MEDIUM
+Mutation: conditional extraction
+Description: Returns elements of an array that satisfy some condition.
+
+Function: place
+Severity: HIGH
+Mutation: conditional replacement
+Description: Changes elements of an array based on conditional and input values.
+
+Function: put
+Severity: HIGH
+Mutation: indexed replacement
+Description: Replaces specified elements of an array with given values.
+
+Function: putmask
+Severity: HIGH
+Mutation: masked replacement
+Description: Changes elements of an array based on conditional and input values.
+
+Function: copyto
+Severity: MEDIUM
+Mutation: array copying
+Description: Copies values from one array to another with broadcasting.
+
+=====================================
+DATABASE LIBRARY FUNCTIONS
+=====================================
+
+Function: delete_from_db
+Severity: CRITICAL
+Mutation: database row deletion
+Description: Deletes data from database tables. This is a permanent destructive operation that can result in data loss.
+
+Function: write_to_db
+Severity: MEDIUM
+Mutation: database data insertion
+Description: Writes data to database tables. Can modify existing data or create new records.
+
+Function: update_db
+Severity: HIGH
+Mutation: database data update
+Description: Updates existing records in database tables. Modifies data permanently.
+
+Function: insert_into_db
+Severity: MEDIUM
+Mutation: database data insertion
+Description: Inserts new records into database tables.
+
+Function: truncate_table
+Severity: CRITICAL
+Mutation: database table truncation
+Description: Removes all data from a database table. This is a destructive operation.
+
+Function: drop_table
+Severity: CRITICAL
+Mutation: database table deletion
+Description: Permanently removes an entire database table and all its data.
+
+Function: execute
+Severity: HIGH
+Mutation: database query execution
+Description: Executes arbitrary SQL commands which may modify or delete data.
+
+Function: executemany
+Severity: HIGH
+Mutation: database batch operation
+Description: Executes multiple SQL commands which may modify or delete data in batch.
+
+Function: commit
+Severity: MEDIUM
+Mutation: database transaction commit
+Description: Commits pending database changes, making them permanent.
+
+Function: rollback
+Severity: MEDIUM
+Mutation: database transaction rollback
+Description: Rolls back pending database changes, potentially losing recent modifications.
+
+=====================================
+RFM LIBRARY FUNCTIONS
+=====================================
+
+Function: write_to_db
+Severity: MEDIUM
+Mutation: database data insertion
+Description: Writes data to database tables. Can modify existing data or create new records.
+
+Function: delete_from_db
+Severity: CRITICAL
+Mutation: database row deletion
+Description: Deletes data from database tables. This is a permanent destructive operation that can result in data loss.
+
+Function: lamp_upload
+Severity: MEDIUM
+Mutation: data upload/transmission
+Description: Uploads data to external systems. May modify or create records in target systems.
+
+Function: getDSRVAR_ByDateRange
+Severity: LOW
+Mutation: data retrieval
+Description: Retrieves data from external sources. While not directly mutating, indicates data dependency.
+
+Function: getATOMTenorPV01Details_ByDateList
+Severity: LOW
+Mutation: data retrieval
+Description: Retrieves data from external sources. While not directly mutating, indicates data dependency.
+
+Function: getDSRVAR_ByDateList
+Severity: LOW
+Mutation: data retrieval
+Description: Retrieves data from external sources. While not directly mutating, indicates data dependency.
+
+=====================================
+HARDCODED VALUES DETECTION
+=====================================
+
+Function: database_connection
+Severity: HIGH
+Mutation: hardcoded database connection
+Description: Hardcoded database connection strings pose security risks and reduce flexibility. Consider using environment variables or configuration files.
+
+Function: file_path
+Severity: MEDIUM
+Mutation: hardcoded file path
+Description: Hardcoded file paths reduce portability and maintainability. Consider using relative paths or configuration.
+
+Function: url_endpoint
+Severity: MEDIUM
+Mutation: hardcoded URL/endpoint
+Description: Hardcoded URLs make it difficult to switch between environments. Use configuration files or environment variables.
+
+Function: credentials
+Severity: CRITICAL
+Mutation: hardcoded credentials
+Description: Hardcoded credentials are a serious security vulnerability. Use secure credential management systems.
+
+Function: api_key
+Severity: CRITICAL
+Mutation: hardcoded API key
+Description: Hardcoded API keys should never be in source code. Use environment variables or secure key management.
+
+Function: magic_number
+Severity: LOW
+Mutation: magic number
+Description: Magic numbers reduce code readability and maintainability. Consider using named constants.
+
+Function: config_value
+Severity: MEDIUM
+Mutation: hardcoded configuration
+Description: Hardcoded configuration values reduce flexibility. Use configuration files or environment variables.
+
+=====================================
+SEVERITY LEVELS EXPLAINED
+=====================================
+
+CRITICAL: Functions that can cause permanent data loss, security vulnerabilities, or system-wide failures.
+         Examples: DELETE, DROP, TRUNCATE, hardcoded credentials
+
+HIGH:     Functions that can significantly modify data or have wide-reaching effects.
+         Examples: UPDATE, ALTER, inplace operations on DataFrames
+
+MEDIUM:   Functions that modify data structure or content but with limited scope.
+         Examples: data aggregation, reshaping, most pandas operations
+
+LOW:      Functions that have minimal risk or are primarily informational.
+         Examples: data filtering, sorting, statistical operations
+
+=====================================
+END OF CATALOG
+=====================================
+
+Total Functions Cataloged: 120+
+Libraries Covered: pandas, numpy, SQL, database, RFM, hardcoded detection
+Generated: $(date) 
