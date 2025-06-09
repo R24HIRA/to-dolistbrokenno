@@ -43,10 +43,6 @@ class MutationVisitor(BaseVisitor):
         
         library, function_name = func_info
         
-        # Only process pandas/numpy mutations here (SQL is handled separately)
-        if library not in ['pandas', 'numpy']:
-            return
-        
         # Look up rule
         rule = self.rule_loader.get_rule(library, function_name)
         if not rule:
@@ -98,7 +94,23 @@ class MutationVisitor(BaseVisitor):
             resolved = self.context.resolve_name(function_name)
             if '.' in resolved:
                 parts = resolved.split('.')
-                return parts[0], parts[-1]
+                # Check if the first part matches any known library
+                library = self.rule_loader.resolve_alias(parts[0])
+                if library:
+                    return library, function_name
+                # Check for patterns like 'rfm.tools' -> 'rfm'
+                if len(parts) >= 2:
+                    library = self.rule_loader.resolve_alias(parts[0])
+                    if library:
+                        return library, function_name
+                return parts[0], function_name
+            else:
+                # For direct imports like 'from rfm.tools import delete_from_db',
+                # the resolved name might be just 'delete_from_db', so we need to
+                # check all known libraries for this function
+                for lib_name in self.rule_loader.get_all_libraries():
+                    if self.rule_loader.get_rule(lib_name, function_name):
+                        return lib_name, function_name
             return None, function_name
         
         elif isinstance(func, cst.Attribute):
