@@ -1,50 +1,28 @@
-"""LibCST visitors for detecting data mutation operations."""
+"""Visitor for detecting pandas/numpy mutation operations."""
 
-from pathlib import Path
-from typing import List, Optional, Union, Dict
+from typing import Dict, Optional, Set
 
 import libcst as cst
-import libcst.matchers as m
-from libcst.metadata import PositionProvider
 
-from .context import AnalysisContext, SQLContext
-from .finding import Finding, Severity
-from .loader import RuleLoader
-from .hardcoded_visitor import HardcodedVisitor
+from .base import BaseVisitor
+from ..core.finding import Finding, Severity
 
 
-class MutationVisitor(cst.CSTVisitor):
-    """Main visitor for detecting data mutation operations."""
+class MutationVisitor(BaseVisitor):
+    """Visitor for detecting data mutation operations in pandas, numpy, etc."""
     
-    METADATA_DEPENDENCIES = (PositionProvider,)
-    
-    def __init__(self, file_path: Path, rule_loader: RuleLoader, context: AnalysisContext):
-        self.file_path = file_path
-        self.rule_loader = rule_loader
-        self.context = context
-        self.findings = []
-        self.variable_types = {}  # Track variable types for method chaining
-        self.sql_variables = {}  # Track variables containing SQL strings
-        self.source_lines = []
-        self.processed_chains = set()  # Track processed chain root nodes to avoid duplicates
-        self.inner_calls = set()  # Track calls that are inner parts of chains
-    
-    def set_source_code(self, source_code: str) -> None:
-        """Set the source code for extracting snippets."""
-        self.source_lines = source_code.splitlines()
+    def __init__(self, file_path, rule_loader, context):
+        super().__init__(file_path, rule_loader, context)
+        self.variable_types: Dict[str, str] = {}  # Track variable types for method chaining
+        self.processed_chains: Set[int] = set()  # Track processed chain root nodes to avoid duplicates
+        self.inner_calls: Set[int] = set()  # Track calls that are inner parts of chains
     
     def visit_Assign(self, node: cst.Assign) -> None:
-        """Track variable assignments for type inference and SQL detection."""
+        """Track variable assignments for type inference."""
         if len(node.targets) == 1:
             target = node.targets[0]
             if isinstance(target.target, cst.Name):
                 var_name = target.target.value
-                
-                # Check if the assigned value is a string that looks like SQL
-                if isinstance(node.value, (cst.SimpleString, cst.ConcatenatedString)):
-                    sql_text = self._extract_string_value(node.value)
-                    if sql_text and self._looks_like_sql(sql_text):
-                        self.sql_variables[var_name] = sql_text
                 
                 # Track variable types for method chaining
                 if isinstance(node.value, cst.Call):
@@ -87,6 +65,10 @@ class MutationVisitor(cst.CSTVisitor):
         
         library, function_name = func_info
         
+        # Only process pandas/numpy mutations here (SQL is handled separately)
+        if library not in ['pandas', 'numpy']:
+            return
+        
         # Look up rule
         rule = self.rule_loader.get_rule(library, function_name)
         if not rule:
@@ -126,12 +108,6 @@ class MutationVisitor(cst.CSTVisitor):
         )
         
         self.findings.append(finding)
-    
-    def visit_SimpleStatementLine(self, node: cst.SimpleStatementLine) -> None:
-        """Visit simple statements to check for SQL strings."""
-        for stmt in node.body:
-            if isinstance(stmt, cst.Expr) and isinstance(stmt.value, cst.Call):
-                self._check_sql_in_call(stmt.value, node)
     
     def _extract_function_info(self, node: cst.Call) -> Optional[tuple[str, str]]:
         """Extract library and function name from a call node."""
@@ -209,11 +185,7 @@ class MutationVisitor(cst.CSTVisitor):
         return None
     
     def _infer_library_from_chain(self, call_node: cst.Call) -> Optional[str]:
-        """Infer the library type from a chained method call.
-        
-        This traverses back through the chain to find the original object
-        and determine what library it belongs to.
-        """
+        """Infer the library type from a chained method call."""
         current = call_node
         
         # Traverse back through the chain to find the root
@@ -281,82 +253,6 @@ class MutationVisitor(cst.CSTVisitor):
                 return f"{base}.{node.attr.value}"
         return None
     
-    def _get_position(self, node: cst.CSTNode) -> Optional[tuple[int, int]]:
-        """Get line and column position of a node."""
-        try:
-            position = self.get_metadata(PositionProvider, node)
-            if position:
-                return position.start.line, position.start.column
-        except Exception:
-            pass
-        return None
-    
-    def _extract_code_snippet(self, node: cst.CSTNode, line_number: int) -> str:
-        """Extract code snippet around the node, capturing multi-line context when needed."""
-        if not self.source_lines or line_number < 1 or line_number > len(self.source_lines):
-            return ""
-        
-        # Try to get position metadata for more accurate extraction
-        start_line = line_number
-        end_line = line_number
-        
-        try:
-            position = self.get_metadata(PositionProvider, node)
-            if position:
-                start_line = position.start.line
-                end_line = position.end.line
-        except Exception:
-            pass
-        
-        # For multi-line expressions, capture the full range
-        if end_line > start_line:
-            lines = []
-            for i in range(start_line, min(end_line + 1, len(self.source_lines) + 1)):
-                if i > 0 and i <= len(self.source_lines):
-                    lines.append(self.source_lines[i - 1].rstrip())
-            return '\n'.join(lines).strip()
-        
-        # For single line, try to capture more context for incomplete lines
-        current_line = self.source_lines[line_number - 1].strip()
-        
-        # If the line appears to be incomplete (ends with comma, open paren, etc.)
-        # try to find the complete statement
-        if (current_line.endswith((',', '(', '[', '{')) or 
-            current_line.count('(') != current_line.count(')') or
-            current_line.count('[') != current_line.count(']') or
-            current_line.count('{') != current_line.count('}')):
-            
-            # Look backwards to find the start of the statement
-            statement_start = line_number
-            for i in range(line_number - 1, 0, -1):
-                prev_line = self.source_lines[i - 1].strip()
-                if (not prev_line.endswith((',', '(', '[', '{', '\\')) and
-                    prev_line.count('(') == prev_line.count(')') and
-                    prev_line.count('[') == prev_line.count(']')):
-                    break
-                statement_start = i
-            
-            # Look forwards to find the end of the statement
-            statement_end = line_number
-            for i in range(line_number, len(self.source_lines)):
-                next_line = self.source_lines[i].strip()
-                if (not next_line.endswith((',', '(', '[', '{', '\\')) and
-                    current_line.count('(') == current_line.count(')') and
-                    current_line.count('[') == current_line.count(']')):
-                    statement_end = i + 1
-                    break
-                current_line += ' ' + next_line
-            
-            # Extract the complete statement
-            if statement_end > statement_start:
-                lines = []
-                for i in range(statement_start, min(statement_end + 1, len(self.source_lines) + 1)):
-                    if i > 0 and i <= len(self.source_lines):
-                        lines.append(self.source_lines[i - 1].rstrip())
-                return '\n'.join(lines).strip()
-        
-        return current_line
-    
     def _apply_extra_checks(self, node: cst.Call, rule, default_severity: Severity) -> tuple[Severity, dict]:
         """Apply extra validation checks and potentially escalate severity."""
         extra_context = {}
@@ -408,92 +304,6 @@ class MutationVisitor(cst.CSTVisitor):
                         return True
         return False
     
-    def _check_sql_in_call(self, call_node: cst.Call, stmt_node: cst.SimpleStatementLine) -> None:
-        """Check for SQL strings in function calls."""
-        for arg in call_node.args:
-            # Check direct string literals
-            if isinstance(arg.value, (cst.SimpleString, cst.ConcatenatedString)):
-                sql_text = self._extract_string_value(arg.value)
-                if sql_text and self._looks_like_sql(sql_text):
-                    mutations = SQLContext.analyze_sql_string(sql_text)
-                    for mutation in mutations:
-                        self._create_sql_finding(mutation, stmt_node, sql_text)
-            
-            # Check variables that contain SQL strings
-            elif isinstance(arg.value, cst.Name):
-                var_name = arg.value.value
-                if var_name in self.sql_variables:
-                    sql_text = self.sql_variables[var_name]
-                    mutations = SQLContext.analyze_sql_string(sql_text)
-                    for mutation in mutations:
-                        self._create_sql_finding(mutation, stmt_node, sql_text)
-    
-    def _extract_string_value(self, node: Union[cst.SimpleString, cst.ConcatenatedString]) -> Optional[str]:
-        """Extract string value from a string node."""
-        if isinstance(node, cst.SimpleString):
-            # Remove quotes and handle escape sequences
-            value = node.value
-            if value.startswith(('"""', "'''")):
-                return value[3:-3]
-            elif value.startswith(('"', "'")):
-                return value[1:-1]
-            return value
-        elif isinstance(node, cst.ConcatenatedString):
-            # Handle concatenated strings
-            parts = []
-            for part in node.left, node.right:
-                if isinstance(part, (cst.SimpleString, cst.ConcatenatedString)):
-                    part_value = self._extract_string_value(part)
-                    if part_value:
-                        parts.append(part_value)
-            return ''.join(parts)
-        return None
-    
-    def _looks_like_sql(self, text: str) -> bool:
-        """Simple heuristic to determine if text looks like SQL."""
-        sql_keywords = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 'ALTER', 'FROM', 'WHERE']
-        text_upper = text.upper()
-        return any(keyword in text_upper for keyword in sql_keywords)
-    
-    def _create_sql_finding(self, mutation: dict, stmt_node: cst.SimpleStatementLine, sql_text: str) -> None:
-        """Create a finding for SQL mutation."""
-        position = self._get_position(stmt_node)
-        if not position:
-            return
-        
-        line_number, column_offset = position
-        
-        # Determine severity based on SQL operation
-        severity_map = {
-            'data insertion': Severity.MEDIUM,
-            'data update': Severity.HIGH,
-            'data deletion': Severity.CRITICAL,
-            'schema/data drop': Severity.CRITICAL,
-            'schema alteration': Severity.HIGH,
-            'data truncation': Severity.CRITICAL,
-            'data merge': Severity.MEDIUM,
-            'data upsert': Severity.MEDIUM,
-            'data replacement': Severity.HIGH
-        }
-        
-        severity = severity_map.get(mutation['mutation_type'], Severity.MEDIUM)
-        
-        finding = Finding(
-            file_path=self.file_path,
-            line_number=line_number,
-            column_offset=column_offset,
-            library="sql",
-            function_name=mutation['keyword'],
-            mutation_type=mutation['mutation_type'],
-            severity=severity,
-            code_snippet=self._extract_code_snippet(stmt_node, line_number),
-            notes=f"SQL {mutation['keyword']} operation detected in string literal",
-            rule_id=f"sql.{mutation['keyword'].lower()}",
-            extra_context={'sql_text': sql_text[:100] + '...' if len(sql_text) > 100 else sql_text}
-        )
-        
-        self.findings.append(finding)
-    
     def _get_chain_root(self, node: cst.Call) -> cst.Call:
         """Get the root call node of a chain."""
         current = node
@@ -502,10 +312,7 @@ class MutationVisitor(cst.CSTVisitor):
         return current
     
     def _extract_chain_functions(self, node: cst.Call) -> list[tuple[str, str, cst.Call]]:
-        """Extract all mutation functions in a chain.
-        
-        Returns a list of (library, function_name, call_node) tuples for mutation functions only.
-        """
+        """Extract all mutation functions in a chain."""
         chain_functions = []
         current = node
         
@@ -602,22 +409,7 @@ class MutationVisitor(cst.CSTVisitor):
             inner_call = current.func.value
             self.inner_calls.add(id(inner_call))
             current = inner_call
-
-    def _is_inner_call_in_chain(self, node: cst.Call) -> bool:
-        """Check if this call is an inner call in a method chain."""
-        return id(node) in self.inner_calls
     
-    def detect_hardcoded_variables(self, tree: cst.Module, source_code: str) -> List[Finding]:
-        """Run hardcoded variable detection on the AST."""
-        hardcoded_visitor = HardcodedVisitor(self.file_path, self.rule_loader)
-        hardcoded_visitor.set_source_code(source_code)
-        
-        # Visit the tree with metadata
-        wrapper = cst.metadata.MetadataWrapper(tree)
-        wrapper.visit(hardcoded_visitor)
-        
-        return hardcoded_visitor.findings
-
     def _check_boolean_indexing(self, node: cst.Assign, var_name: str) -> None:
         """Check for boolean indexing patterns that filter data."""
         value = node.value

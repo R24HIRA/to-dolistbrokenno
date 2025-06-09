@@ -14,7 +14,7 @@ from .core.context import AliasCollector, AnalysisContext
 from .core.emitter import create_emitter
 from .core.finding import Severity
 from .core.loader import RuleLoader
-from .core.visitor import MutationVisitor
+from .visitors import MasterVisitor
 
 app = typer.Typer(
     name="datamut",
@@ -62,27 +62,14 @@ def analyze_file(file_path: Path, rule_loader: RuleLoader) -> List:
     context = AnalysisContext()
     context.update_from_collector(alias_collector)
     
-    # Second pass: find mutations
-    mutation_visitor = MutationVisitor(file_path, rule_loader, context)
-    mutation_visitor.set_source_code(source_code)
+    # Use the master visitor to coordinate all analysis
+    master_visitor = MasterVisitor(file_path, rule_loader, context)
     
-    # Add position metadata to the tree
-    wrapper = cst.metadata.MetadataWrapper(tree)
     try:
-        wrapper.visit(mutation_visitor)
+        all_findings = master_visitor.analyze(tree, source_code)
     except Exception as e:
         console.print(f"[red]Error analyzing {file_path}: {e}[/red]")
         return []
-    
-    # Collect all findings
-    all_findings = mutation_visitor.findings.copy()
-    
-    # Third pass: detect hardcoded variables
-    try:
-        hardcoded_findings = mutation_visitor.detect_hardcoded_variables(tree, source_code)
-        all_findings.extend(hardcoded_findings)
-    except Exception as e:
-        console.print(f"[red]Error detecting hardcoded variables in {file_path}: {e}[/red]")
 
     return all_findings
 
