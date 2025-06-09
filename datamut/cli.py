@@ -109,6 +109,11 @@ def audit(
         False,
         "--verbose", "-v",
         help="Enable verbose output"
+    ),
+    no_fail_on_findings: bool = typer.Option(
+        False,
+        "--no-fail-on-findings",
+        help="Don't exit with code 1 when findings are found (always exit 0 on success)"
     )
 ):
     """Audit Python files for data mutation operations."""
@@ -235,14 +240,17 @@ def audit(
     
     console.print(f"\nReport saved to: [bold]{output}[/bold]")
     
-    # Determine exit code based on severity
+    # Determine exit code based on severity and --no-fail-on-findings flag
     exit_code = 0
-    if all_findings:
+    if all_findings and not no_fail_on_findings:
         max_severity_weight = max(f.severity.exit_code_weight for f in all_findings)
         if max_severity_weight >= min_severity_enum.exit_code_weight:
             exit_code = 1
             if verbose:
                 console.print(f"[yellow]Exit code 1: Found findings with severity >= {min_severity}[/yellow]")
+    elif all_findings and no_fail_on_findings:
+        if verbose:
+            console.print("[green]Exit code 0: --no-fail-on-findings enabled[/green]")
     
     raise typer.Exit(exit_code)
 

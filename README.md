@@ -424,7 +424,13 @@ jobs:
 
 ### Exit Codes
 
-DataMut returns exit code 1 if findings are found with severity >= `--min-severity` (default: MEDIUM).
+DataMut returns different exit codes based on findings and configuration:
+
+- **Exit Code 0**: No issues found OR `--no-fail-on-findings` is used
+- **Exit Code 1**: Issues found with severity >= `--min-severity` (default: MEDIUM)  
+- **Exit Code 2+**: Tool errors or failures
+
+Use `--no-fail-on-findings` to always exit with code 0 when analysis completes successfully, regardless of findings. This is useful for reporting-only scenarios where you don't want to fail CI/CD pipelines.
 
 ## 📚 CLI Reference
 
@@ -445,6 +451,7 @@ Options:
   --min-severity [LOW|MEDIUM|HIGH|CRITICAL]  Minimum severity for exit code
   --rules-dir PATH         Additional custom rules directory
   -v, --verbose           Enable verbose output
+  --no-fail-on-findings   Don't exit with code 1 when findings are found (always exit 0 on success)
   --help                  Show help message
 ```
 
@@ -463,6 +470,9 @@ datamut audit src/ --format json --output mutations.json
 # Only fail on HIGH or CRITICAL findings
 datamut audit src/ --min-severity HIGH
 
+# Never fail on findings (for reporting only)
+datamut audit src/ --no-fail-on-findings
+
 # Use custom rules
 datamut audit src/ --rules-dir ./my-rules/
 
@@ -473,7 +483,7 @@ datamut audit src/ --verbose
 datamut list-rules
 
 # Filter rules by library
-datamut list-rules | grep pandas
+datamut list-rules --library pandas
 ```
 
 ## 🐛 Troubleshooting

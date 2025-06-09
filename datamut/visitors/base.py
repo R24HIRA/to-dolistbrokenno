@@ -1,5 +1,7 @@
 """Base visitor class with common functionality."""
 
+import logging
+import time
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -10,6 +12,9 @@ from ..core.finding import Finding
 from ..core.loader import RuleLoader
 from ..core.context import AnalysisContext
 
+# Set up logging
+logger = logging.getLogger(__name__)
+
 
 class BaseVisitor(cst.CSTVisitor):
     """Base visitor class with common functionality for all sub-visitors."""
@@ -17,15 +22,44 @@ class BaseVisitor(cst.CSTVisitor):
     METADATA_DEPENDENCIES = (PositionProvider,)
     
     def __init__(self, file_path: Path, rule_loader: RuleLoader, context: AnalysisContext):
+        super().__init__()
         self.file_path = file_path
         self.rule_loader = rule_loader
         self.context = context
         self.findings: List[Finding] = []
         self.source_lines: List[str] = []
+        
+        # Performance monitoring
+        self.start_time: Optional[float] = None
+        self.visit_count = 0
     
     def set_source_code(self, source_code: str) -> None:
         """Set the source code for extracting snippets."""
         self.source_lines = source_code.splitlines()
+        logger.debug(f"Set source code: {len(self.source_lines)} lines")
+    
+    def on_visit(self, node: cst.CSTNode) -> bool:
+        """Called before visiting any node - track performance."""
+        if self.start_time is None:
+            self.start_time = time.time()
+        self.visit_count += 1
+        # Make sure to call the parent's on_visit method
+        return super().on_visit(node)
+    
+    def on_leave(self, original_node: cst.CSTNode) -> cst.CSTNode:
+        """Called after visiting any node."""
+        return original_node
+    
+    def get_performance_stats(self) -> dict:
+        """Get performance statistics for this visitor."""
+        elapsed = time.time() - self.start_time if self.start_time else 0
+        return {
+            "visitor_type": self.__class__.__name__,
+            "elapsed_time": elapsed,
+            "visit_count": self.visit_count,
+            "findings_count": len(self.findings),
+            "nodes_per_second": self.visit_count / elapsed if elapsed > 0 else 0
+        }
     
     def _get_position(self, node: cst.CSTNode) -> Optional[tuple[int, int]]:
         """Get line and column position of a node."""

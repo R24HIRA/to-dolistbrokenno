@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class Severity(str, Enum):
@@ -41,6 +41,10 @@ class Severity(str, Enum):
 class Finding(BaseModel):
     """A single data mutation finding from static analysis."""
     
+    model_config = ConfigDict(
+        json_encoders={Path: str}
+    )
+    
     file_path: Path = Field(..., description="Path to the file containing the finding")
     line_number: int = Field(..., description="Line number where the finding occurs", ge=1)
     column_offset: int = Field(default=0, description="Column offset within the line", ge=0)
@@ -52,12 +56,6 @@ class Finding(BaseModel):
     notes: Optional[str] = Field(default=None, description="Additional notes about this finding")
     rule_id: Optional[str] = Field(default=None, description="ID of the rule that triggered this finding")
     extra_context: Dict[str, Any] = Field(default_factory=dict, description="Additional context data")
-    
-    class Config:
-        """Pydantic configuration."""
-        json_encoders = {
-            Path: str
-        }
     
     @property
     def display_path(self) -> str:

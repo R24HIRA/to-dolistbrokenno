@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import yaml
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from .finding import Severity
 
@@ -38,7 +38,8 @@ class RuleMeta(BaseModel):
     library: str = Field(..., description="Library name (e.g., 'pandas', 'numpy')")
     alias_regex: str = Field(..., description="Regex pattern for common aliases")
     
-    @validator('alias_regex')
+    @field_validator('alias_regex')
+    @classmethod
     def validate_regex(cls, v):
         """Validate that alias_regex is a valid regex pattern."""
         try:
