@@ -29,7 +29,7 @@ class ChainVisitor(BaseVisitor):
                     func_info = self._extract_function_info(node.value)
                     if func_info:
                         library, function_name = func_info
-                        if library in ['pandas', 'numpy']:
+                        if library in ['pandas', 'numpy', 'sqlalchemy', 'sqlite3', 'psycopg2', 'pymongo']:
                             self.variable_types[var_name] = library
     
     def visit_Call(self, node: cst.Call) -> None:
@@ -241,8 +241,8 @@ class ChainVisitor(BaseVisitor):
         line_number, column_offset = position
         code_snippet = self._extract_code_snippet(node, line_number)
         
-        # Determine the highest severity in the chain
-        max_severity = Severity.LOW
+        # ALL CHAIN OPERATIONS ARE HIGH SEVERITY
+        max_severity = Severity.HIGH
         libraries = set()
         function_names = []
         mutation_types = []
@@ -253,14 +253,12 @@ class ChainVisitor(BaseVisitor):
             
             rule = self.rule_loader.get_rule(library, function_name)
             if rule:
-                severity = rule.default_severity
-                # Apply extra checks for this specific call
+                # Still apply extra checks (like inplace=True) which can escalate to CRITICAL
                 if rule.extra_checks:
-                    severity, _ = self._apply_extra_checks(call_node, rule, severity)
-                
-                # Update max severity using proper numeric comparison
-                if severity.exit_code_weight > max_severity.exit_code_weight:
-                    max_severity = severity
+                    severity, _ = self._apply_extra_checks(call_node, rule, Severity.HIGH)
+                    # Only allow escalation to CRITICAL, not reduction
+                    if severity == Severity.CRITICAL:
+                        max_severity = Severity.CRITICAL
                 
                 mutation_types.append(rule.mutation)
         

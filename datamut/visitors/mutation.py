@@ -60,11 +60,15 @@ class MutationVisitor(BaseVisitor):
         code_snippet = self._extract_code_snippet(node, line_number)
         
         # Determine severity (may be escalated by extra checks)
-        severity = rule.default_severity
+        # ALL MUTATIONS ARE HIGH SEVERITY (unless escalated to CRITICAL by extra checks)
+        severity = Severity.HIGH
         extra_context = {}
         
         if rule.extra_checks:
-            severity, extra_context = self._apply_extra_checks(node, rule, severity)
+            check_severity, extra_context = self._apply_extra_checks(node, rule, Severity.HIGH)
+            # Only allow escalation to CRITICAL, not reduction
+            if check_severity == Severity.CRITICAL:
+                severity = Severity.CRITICAL
         
         # Create finding
         finding = Finding(

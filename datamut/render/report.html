@@ -209,6 +209,34 @@
             42% { transform: scale(1.05); }
             70% { transform: scale(1); }
         }
+        
+        .filter-active {
+            border: 2px solid #28a745 !important;
+            background-color: rgba(40, 167, 69, 0.1) !important;
+        }
+        
+        .filter-status {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            margin-left: 0.5rem;
+            display: none;
+        }
+        
+        .filter-status.active {
+            display: inline-block;
+        }
+        
+        .group-status {
+            background: linear-gradient(45deg, #0d6efd, #6610f2);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -305,10 +333,12 @@
         <div class="filter-section">
             <h5 class="mb-3">
                 <i class="bi bi-funnel"></i>
-                Smart Filters & File Selection
+                Smart Filters & Grouping
+                <span class="filter-status" id="filterStatus">Filters Active</span>
+                <span class="group-status" id="groupStatus" style="display: none;">Grouped</span>
             </h5>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="fileSelector" class="form-label">
                         <i class="bi bi-file-code"></i>
                         Select File to Analyze
@@ -349,16 +379,54 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                        <i class="bi bi-x-circle"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <label for="groupBySelector" class="form-label">
+                        <i class="bi bi-collection"></i>
+                        Group By
+                    </label>
+                    <select class="form-select" id="groupBySelector">
+                        <option value="none">No Grouping</option>
+                        <option value="severity">Group by Severity</option>
+                        <option value="library">Group by Library</option>
+                        <option value="mutation">Group by Mutation Type</option>
+                        <option value="file">Group by File</option>
+                        <option value="severity-library">Group by Severity → Library</option>
+                        <option value="library-severity">Group by Library → Severity</option>
+                    </select>
+                </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <div class="btn-group w-100">
-                        <button class="btn btn-outline-secondary" onclick="clearFilters()">
-                            <i class="bi bi-x-circle"></i>
-                            Clear
-                        </button>
                         <button class="btn btn-outline-primary" onclick="toggleView()">
                             <i class="bi bi-view-list" id="view-icon"></i>
+                            <span id="view-text">Timeline</span>
                         </button>
                     </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-success w-100" onclick="exportGroupedData()">
+                        <i class="bi bi-download"></i>
+                        Export
+                    </button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-info w-100" onclick="expandAllGroups()">
+                        <i class="bi bi-arrows-expand"></i>
+                        Expand All
+                    </button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-warning w-100" onclick="collapseAllGroups()">
+                        <i class="bi bi-arrows-collapse"></i>
+                        Collapse All
+                    </button>
                 </div>
             </div>
         </div>
@@ -468,6 +536,31 @@
                 </div>
             </div>
         </div>
+
+        <!-- Grouped Findings View (Hidden by default) -->
+        <div class="card" id="groupedView" style="display: none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-collection"></i>
+                    Grouped Findings
+                </h5>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-info" onclick="expandAllGroups()">
+                        <i class="bi bi-arrows-expand"></i>
+                        Expand All
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="collapseAllGroups()">
+                        <i class="bi bi-arrows-collapse"></i>
+                        Collapse All
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="groupedContainer">
+                    <!-- Grouped content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Bootstrap 5 JS -->
@@ -503,11 +596,8 @@
         // Initialize the severity bar chart
         function initializeSeverityChart() {
             const ctx = document.getElementById('severityChart').getContext('2d');
-            const severityData = {
-                {% for severity in severities -%}
-                    '{{ severity }}': {{ summary.by_severity.get(severity, 0) }}{% if not loop.last %},{% endif %}
-                {% endfor -%}
-            };
+            const severityData = {};
+            {{ severity_js_assignments|safe }}
             
             severityChart = new Chart(ctx, {
                 type: 'bar',
@@ -570,11 +660,11 @@
         
         // Setup event listeners
         function setupEventListeners() {
-            const filters = ['fileSelector', 'severityFilter', 'libraryFilter', 'mutationFilter'];
+            const filters = ['fileSelector', 'severityFilter', 'libraryFilter', 'mutationFilter', 'groupBySelector'];
             filters.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
-                    element.addEventListener('change', filterTable);
+                    element.addEventListener('change', id === 'groupBySelector' ? handleGroupChange : filterTable);
                 }
             });
         }
@@ -608,26 +698,64 @@
                 }
             });
             
+            // Update filter status indicator
+            updateFilterStatus(fileFilter, severityFilter, libraryFilter, mutationFilter, visibleCount, rows.length);
+            
             // Update visible count
             console.log(`Showing ${visibleCount} of ${rows.length} findings`);
+            
+            // If grouping is active, regenerate the grouped view with filtered data
+            const groupBy = document.getElementById('groupBySelector').value;
+            if (groupBy !== 'none') {
+                generateGroupedView(groupBy);
+            }
+        }
+        
+        // Update filter status indicators
+        function updateFilterStatus(fileFilter, severityFilter, libraryFilter, mutationFilter, visibleCount, totalCount) {
+            const filterStatus = document.getElementById('filterStatus');
+            const hasActiveFilters = fileFilter || severityFilter || libraryFilter || mutationFilter;
+            
+            if (hasActiveFilters) {
+                const activeFilters = [];
+                if (fileFilter) activeFilters.push(`File: ${fileFilter.split('/').pop()}`);
+                if (severityFilter) activeFilters.push(`Severity: ${severityFilter}`);
+                if (libraryFilter) activeFilters.push(`Library: ${libraryFilter}`);
+                if (mutationFilter) activeFilters.push(`Type: ${mutationFilter}`);
+                
+                filterStatus.innerHTML = `Filtered (${visibleCount}/${totalCount}) - ${activeFilters.join(', ')}`;
+                filterStatus.classList.add('active');
+                
+                // Add visual indication to filter section
+                document.querySelector('.filter-section').classList.add('filter-active');
+            } else {
+                filterStatus.classList.remove('active');
+                document.querySelector('.filter-section').classList.remove('filter-active');
+            }
         }
         
         // Toggle between table and timeline view
         function toggleView() {
             const tableView = document.getElementById('tableView');
             const timelineView = document.getElementById('timelineView');
+            const groupedView = document.getElementById('groupedView');
             const viewIcon = document.getElementById('view-icon');
+            const viewText = document.getElementById('view-text');
             
             if (currentView === 'table') {
                 tableView.style.display = 'none';
+                groupedView.style.display = 'none';
                 timelineView.style.display = 'block';
                 viewIcon.className = 'bi bi-table';
+                viewText.textContent = 'Table';
                 currentView = 'timeline';
                 generateTimeline();
             } else {
-                tableView.style.display = 'block';
                 timelineView.style.display = 'none';
+                groupedView.style.display = 'none';
+                tableView.style.display = 'block';
                 viewIcon.className = 'bi bi-view-list';
+                viewText.textContent = 'Timeline';
                 currentView = 'table';
             }
         }
@@ -707,12 +835,25 @@
             selectAllCheckbox.checked = checkedRows.length === visibleRows.length && visibleRows.length > 0;
         }
         
-        // Clear all filters
+        // Enhanced clear filters function
         function clearFilters() {
             document.getElementById('fileSelector').value = '';
             document.getElementById('severityFilter').value = '';
             document.getElementById('libraryFilter').value = '';
             document.getElementById('mutationFilter').value = '';
+            document.getElementById('groupBySelector').value = 'none';
+            
+            // Reset to table view
+            const tableView = document.getElementById('tableView');
+            const groupedView = document.getElementById('groupedView');
+            tableView.style.display = 'block';
+            groupedView.style.display = 'none';
+            
+            // Reset status indicators
+            document.getElementById('filterStatus').classList.remove('active');
+            document.getElementById('groupStatus').style.display = 'none';
+            document.querySelector('.filter-section').classList.remove('filter-active');
+            
             filterTable();
         }
         
@@ -735,6 +876,281 @@
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
             selectAllCheckbox.checked = true;
             toggleSelectAll();
+        }
+
+        // ============ GROUPING FUNCTIONALITY ============
+        
+        // Handle group change
+        function handleGroupChange() {
+            const groupBy = document.getElementById('groupBySelector').value;
+            const tableView = document.getElementById('tableView');
+            const groupedView = document.getElementById('groupedView');
+            const groupStatus = document.getElementById('groupStatus');
+            
+            if (groupBy === 'none') {
+                tableView.style.display = 'block';
+                groupedView.style.display = 'none';
+                groupStatus.style.display = 'none';
+            } else {
+                // First apply current filters to ensure we're working with filtered data
+                filterTable();
+                
+                tableView.style.display = 'none';
+                groupedView.style.display = 'block';
+                generateGroupedView(groupBy);
+                
+                // Update the grouped view header to show filter status
+                updateGroupedViewHeader(groupBy);
+                
+                // Show group status indicator
+                const groupTypeText = groupBy.replace('-', ' → ').replace(/\b\w/g, l => l.toUpperCase());
+                groupStatus.innerHTML = `Grouped by ${groupTypeText}`;
+                groupStatus.style.display = 'inline-block';
+            }
+        }
+        
+        // Generate grouped view
+        function generateGroupedView(groupBy) {
+            const container = document.getElementById('groupedContainer');
+            const rows = Array.from(document.querySelectorAll('#findingsTable tbody tr')).filter(row => row.style.display !== 'none');
+            
+            let groupedData = {};
+            
+            // Group the data
+            rows.forEach(row => {
+                let groupKey = getGroupKey(row, groupBy);
+                if (!groupedData[groupKey]) {
+                    groupedData[groupKey] = [];
+                }
+                groupedData[groupKey].push(row);
+            });
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Sort groups by priority (CRITICAL > HIGH > MEDIUM > LOW for severity)
+            const sortedGroups = Object.keys(groupedData).sort((a, b) => {
+                if (groupBy.includes('severity')) {
+                    const severityOrder = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+                    const aIndex = severityOrder.findIndex(s => a.includes(s));
+                    const bIndex = severityOrder.findIndex(s => b.includes(s));
+                    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                }
+                return a.localeCompare(b);
+            });
+            
+            // Create accordion for each group
+            sortedGroups.forEach((groupKey, index) => {
+                const groupData = groupedData[groupKey];
+                const groupCard = createGroupCard(groupKey, groupData, index, groupBy);
+                container.appendChild(groupCard);
+            });
+        }
+        
+        // Get group key based on grouping type
+        function getGroupKey(row, groupBy) {
+            const severity = row.dataset.severity;
+            const library = row.dataset.library;
+            const mutation = row.dataset.mutation;
+            const file = row.dataset.file;
+            
+            switch (groupBy) {
+                case 'severity':
+                    return severity;
+                case 'library':
+                    return library;
+                case 'mutation':
+                    return mutation;
+                case 'file':
+                    return file.split('/').pop(); // Just filename
+                case 'severity-library':
+                    return `${severity} → ${library}`;
+                case 'library-severity':
+                    return `${library} → ${severity}`;
+                default:
+                    return 'Other';
+            }
+        }
+        
+        // Create group card
+        function createGroupCard(groupKey, groupData, index, groupBy) {
+            const card = document.createElement('div');
+            card.className = 'card mb-3';
+            
+            const severityCounts = {};
+            groupData.forEach(row => {
+                const severity = row.dataset.severity;
+                severityCounts[severity] = (severityCounts[severity] || 0) + 1;
+            });
+            
+            const severityBadges = Object.entries(severityCounts)
+                .map(([severity, count]) => `<span class="badge severity-${severity} severity-badge ms-1">${severity} (${count})</span>`)
+                .join('');
+            
+            card.innerHTML = `
+                <div class="card-header" id="heading${index}">
+                    <h6 class="mb-0">
+                        <button class="btn btn-link text-decoration-none w-100 text-start d-flex justify-content-between align-items-center" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#collapse${index}" 
+                                aria-expanded="true" 
+                                aria-controls="collapse${index}">
+                            <div>
+                                <i class="bi bi-collection me-2"></i>
+                                <strong>${groupKey}</strong>
+                                <span class="text-muted ms-2">(${groupData.length} findings)</span>
+                            </div>
+                            <div>
+                                ${severityBadges}
+                                <i class="bi bi-chevron-down ms-2"></i>
+                            </div>
+                        </button>
+                    </h6>
+                </div>
+                <div id="collapse${index}" class="collapse show" data-bs-parent="#groupedContainer">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="25%">File</th>
+                                        <th width="8%">Line</th>
+                                        <th width="12%">Library</th>
+                                        <th width="15%">Function</th>
+                                        <th width="15%">Mutation Type</th>
+                                        <th width="10%">Severity</th>
+                                        <th width="15%">Code Snippet</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${generateGroupTableRows(groupData)}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Generate table rows for a group
+        function generateGroupTableRows(groupData) {
+            return groupData.map(row => {
+                const file = row.dataset.file.split('/').pop();
+                const line = row.cells[2].textContent;
+                const library = row.dataset.library;
+                const func = row.cells[4].textContent;
+                const mutation = row.dataset.mutation;
+                const severity = row.dataset.severity;
+                const codeSnippet = row.cells[7].textContent;
+                
+                return `
+                    <tr class="finding-row">
+                        <td>
+                            <small class="text-muted">
+                                <i class="bi bi-file-code text-primary me-1"></i>
+                                ${file}
+                            </small>
+                        </td>
+                        <td><span class="badge bg-light text-dark">${line}</span></td>
+                        <td><span class="library-badge">${library}</span></td>
+                        <td><code class="bg-transparent">${func}</code></td>
+                        <td><span class="mutation-type">${mutation}</span></td>
+                        <td><span class="badge severity-${severity} severity-badge">${severity}</span></td>
+                        <td>
+                            <div class="code-snippet" title="Click to expand">
+                                <code>${codeSnippet}</code>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Expand all groups
+        function expandAllGroups() {
+            const collapses = document.querySelectorAll('#groupedContainer .collapse');
+            collapses.forEach(collapse => {
+                if (!collapse.classList.contains('show')) {
+                    new bootstrap.Collapse(collapse, { show: true });
+                }
+            });
+        }
+        
+        // Collapse all groups
+        function collapseAllGroups() {
+            const collapses = document.querySelectorAll('#groupedContainer .collapse');
+            collapses.forEach(collapse => {
+                if (collapse.classList.contains('show')) {
+                    new bootstrap.Collapse(collapse, { hide: true });
+                }
+            });
+        }
+        
+        // Export grouped data
+        function exportGroupedData() {
+            const groupBy = document.getElementById('groupBySelector').value;
+            if (groupBy === 'none') {
+                alert('Please select a grouping option before exporting.');
+                return;
+            }
+            
+            const rows = Array.from(document.querySelectorAll('#findingsTable tbody tr')).filter(row => row.style.display !== 'none');
+            
+            let csvContent = "Group,File,Line,Library,Function,Mutation Type,Severity,Code Snippet\n";
+            
+            let groupedData = {};
+            rows.forEach(row => {
+                let groupKey = getGroupKey(row, groupBy);
+                if (!groupedData[groupKey]) {
+                    groupedData[groupKey] = [];
+                }
+                groupedData[groupKey].push(row);
+            });
+            
+            Object.entries(groupedData).forEach(([groupKey, groupData]) => {
+                groupData.forEach(row => {
+                    const file = row.dataset.file;
+                    const line = row.cells[2].textContent;
+                    const library = row.dataset.library;
+                    const func = row.cells[4].textContent;
+                    const mutation = row.dataset.mutation;
+                    const severity = row.dataset.severity;
+                    const codeSnippet = row.cells[7].textContent.replace(/"/g, '""');
+                    
+                    csvContent += `"${groupKey}","${file}","${line}","${library}","${func}","${mutation}","${severity}","${codeSnippet}"\n`;
+                });
+            });
+            
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `datamut-grouped-by-${groupBy}-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Update grouped view header to show filter status
+        function updateGroupedViewHeader(groupBy) {
+            const header = document.querySelector('#groupedView .card-header h5');
+            const totalRows = document.querySelectorAll('#findingsTable tbody tr').length;
+            const visibleRows = Array.from(document.querySelectorAll('#findingsTable tbody tr')).filter(row => row.style.display !== 'none').length;
+            
+            const filterInfo = visibleRows < totalRows ? 
+                ` (${visibleRows}/${totalRows} findings after filtering)` : 
+                ` (${visibleRows} findings)`;
+            
+            const groupTypeText = groupBy.replace('-', ' → ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            header.innerHTML = `
+                <i class="bi bi-collection"></i>
+                Grouped by ${groupTypeText}${filterInfo}
+            `;
         }
     </script>
 </body>

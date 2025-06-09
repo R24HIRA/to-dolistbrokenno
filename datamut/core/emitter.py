@@ -71,13 +71,40 @@ class HTMLEmitter(BaseEmitter):
         
         file_list = sorted(file_stats.values(), key=lambda x: x['findings_count'], reverse=True)
         
+        # Create findings with display_path for template
+        findings_with_display_path = []
+        for finding in self.findings:
+            finding_dict = {
+                'file_path': finding.file_path,
+                'display_path': str(finding.file_path),
+                'line_number': finding.line_number,
+                'column_offset': finding.column_offset,
+                'library': finding.library,
+                'function_name': finding.function_name,
+                'mutation_type': finding.mutation_type,
+                'severity': finding.severity,
+                'code_snippet': finding.code_snippet,
+                'notes': finding.notes,
+                'rule_id': finding.rule_id,
+                'extra_context': finding.extra_context
+            }
+            findings_with_display_path.append(finding_dict)
+        
+        # Generate JavaScript data for charts
+        summary_stats = self.get_summary_stats()
+        severity_js_data = []
+        for severity in ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']:
+            count = summary_stats['by_severity'].get(severity, 0)
+            severity_js_data.append(f"severityData['{severity}'] = {count};")
+        
         # Prepare data for template
         context = {
-            'findings': self.findings,
-            'summary': self.get_summary_stats(),
+            'findings': findings_with_display_path,
+            'summary': summary_stats,
             'generated_at': datetime.now().isoformat(),
             'total_files': len(set(f.file_path for f in self.findings)),
             'severities': ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
+            'severity_js_assignments': '\n            '.join(severity_js_data),
             'file_list': file_list
         }
         

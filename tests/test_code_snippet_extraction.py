@@ -48,9 +48,12 @@ df.drop('a', axis=1)
         # Use the analyze method
         findings = visitor.analyze(tree, code)
         
+        # Filter for pandas drop findings only (ignore hardcoded magic numbers)
+        drop_findings = [f for f in findings if f.library == 'pandas' and f.function_name == 'drop']
+        
         # Check that we found the drop operation
-        assert len(findings) == 1
-        finding = findings[0]
+        assert len(drop_findings) == 1
+        finding = drop_findings[0]
         
         # Verify the code snippet is complete
         assert "df.drop('a', axis=1)" in finding.code_snippet

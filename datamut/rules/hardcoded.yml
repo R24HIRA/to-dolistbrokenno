@@ -3,82 +3,98 @@ meta:
   alias_regex: "^(hardcoded)$"
 
 rules:
-  # Database connection strings
+  # Database connection strings - CRITICAL for financial institutions
   - func: database_connection
     mutation: "hardcoded database connection"
-    default_severity: HIGH
+    default_severity: CRITICAL
     notes: |
-      Hardcoded database connection strings pose security risks and reduce flexibility.
-      Consider using environment variables or configuration files.
+      Hardcoded database connection strings pose CRITICAL security risks in financial systems.
+      Use secure credential management and environment variables.
 
-  # File paths
+  # File paths - CRITICAL for financial institutions  
   - func: file_path
     mutation: "hardcoded file path"
-    default_severity: MEDIUM
+    default_severity: CRITICAL
     notes: |
-      Hardcoded file paths reduce portability and maintainability.
-      Consider using relative paths or configuration.
+      Hardcoded file paths pose CRITICAL security and compliance risks in financial systems.
+      Use configuration management and secure path handling.
 
-  # URLs and endpoints
+  # URLs and endpoints - CRITICAL for financial institutions
   - func: url_endpoint
     mutation: "hardcoded URL/endpoint"
-    default_severity: MEDIUM
+    default_severity: CRITICAL
     notes: |
-      Hardcoded URLs make it difficult to switch between environments.
-      Use configuration files or environment variables.
+      Hardcoded URLs pose CRITICAL security risks in financial systems.
+      Use secure configuration management and environment-specific settings.
 
-  # Credentials
+  # Credentials - Already CRITICAL
   - func: credentials
     mutation: "hardcoded credentials"
     default_severity: CRITICAL
     notes: |
-      Hardcoded credentials are a serious security vulnerability.
-      Use secure credential management systems.
+      Hardcoded credentials are a CRITICAL security vulnerability in financial systems.
+      Use secure credential management systems and HSMs.
 
-  # API keys and tokens
+  # API keys and tokens - Already CRITICAL
   - func: api_key
     mutation: "hardcoded API key"
     default_severity: CRITICAL
     notes: |
-      Hardcoded API keys should never be in source code.
-      Use environment variables or secure key management.
+      Hardcoded API keys pose CRITICAL security risks in financial systems.
+      Use secure key management and token rotation.
 
-  # Magic numbers
+  # Magic numbers - CRITICAL for financial institutions
   - func: magic_number
     mutation: "magic number"
-    default_severity: LOW
+    default_severity: CRITICAL
     notes: |
-      Magic numbers reduce code readability and maintainability.
-      Consider using named constants.
+      Magic numbers pose CRITICAL risks in financial systems (amounts, rates, limits).
+      Use named constants and configuration management.
 
-  # Configuration values
+  # Configuration values - CRITICAL for financial institutions
   - func: config_value
     mutation: "hardcoded configuration"
-    default_severity: MEDIUM
+    default_severity: CRITICAL
     notes: |
-      Hardcoded configuration values reduce flexibility.
-      Use configuration files or environment variables.
+      Hardcoded configuration values pose CRITICAL compliance risks in financial systems.
+      Use secure configuration management and audit trails.
 
-  # Email addresses
+  # Email addresses - CRITICAL for financial institutions
   - func: email_address
     mutation: "hardcoded email address"
-    default_severity: MEDIUM
+    default_severity: CRITICAL
     notes: |
-      Hardcoded email addresses should be configurable.
-      Consider using configuration or environment variables.
+      Hardcoded email addresses pose CRITICAL compliance risks in financial systems.
+      Use configuration management and audit trails.
 
-  # IP addresses
+  # IP addresses - CRITICAL for financial institutions
   - func: ip_address
     mutation: "hardcoded IP address"
-    default_severity: HIGH
+    default_severity: CRITICAL
     notes: |
-      Hardcoded IP addresses reduce portability and security.
-      Use DNS names or configuration files.
+      Hardcoded IP addresses pose CRITICAL security risks in financial systems.
+      Use DNS, service discovery, and secure network configuration.
 
-  # Ports
+  # Ports - CRITICAL for financial institutions
   - func: port_number
     mutation: "hardcoded port number"
-    default_severity: MEDIUM
+    default_severity: CRITICAL
     notes: |
-      Hardcoded port numbers reduce flexibility.
-      Consider using configuration files. 
+      Hardcoded port numbers pose CRITICAL security risks in financial systems.
+      Use secure configuration management and service discovery.
+
+  # Financial data - CRITICAL for financial institutions
+  - func: financial_data
+    mutation: "hardcoded financial data"
+    default_severity: CRITICAL
+    notes: |
+      Hardcoded financial data (account numbers, routing codes, etc.) pose CRITICAL compliance and security risks.
+      Use secure vaults, encryption, and proper financial data handling protocols.
+
+  # Cryptocurrency data - CRITICAL for financial institutions
+  - func: crypto_data
+    mutation: "hardcoded cryptocurrency data"
+    default_severity: CRITICAL
+    notes: |
+      Hardcoded cryptocurrency data (private keys, wallet addresses, etc.) pose CRITICAL security risks.
+      Use hardware security modules (HSMs) and secure key management systems. 
