@@ -5,23 +5,22 @@ meta:
 rules:
   - func: join
     mutation: "row-set merge"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
-      Can silently drop rows when how='inner'. Consider using merge() with 
-      validate parameter for better control.
+      Can silently drop rows when how='inner'. Please validate data completeness.
 
   - func: merge
     mutation: "row-set merge"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
       Can silently drop or duplicate rows depending on join type and key uniqueness.
-      Use validate parameter to catch unexpected behavior.
+      Please validate data completeness.
 
   - func: drop
     mutation: "row/col drop"
-    default_severity: HIGH
+    default_severity: HIGH 
     notes: |
-      Permanently removes data from DataFrame. Use with caution in production.
+      Permanently removes data from DataFrame. Please validate removal rationale and data completeness.
     extra_checks:
       arg_present:
         name: inplace
@@ -37,40 +36,42 @@ rules:
       arg_present:
         name: inplace
         value: true
-        set_severity: HIGH
+        set_severity: CRITICAL
 
   - func: dropna
     mutation: "null value removal"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
-      Removes rows/columns with missing values. May significantly reduce dataset size.
+      Removes rows/columns with missing values. N/A value might be due to incorrent model output,
+      removal without validation could impact data completeness/accuracy.
     extra_checks:
       arg_present:
         name: inplace
         value: true
-        set_severity: HIGH
+        set_severity: CRITICAL
 
   - func: fillna
     mutation: "null value imputation"
-    default_severity: LOW
+    default_severity: HIGH
     notes: |
-      Replaces missing values with specified values. Can introduce bias if not done carefully.
+      Replaces missing values with specified values. N/A value might be due to incorrent model output,
+      removal without validation could impact data completeness/accuracy.
     extra_checks:
       arg_present:
         name: inplace
         value: true
-        set_severity: MEDIUM
+        set_severity: CRITICAL
 
   - func: replace
     mutation: "value replacement"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
-      Replaces specified values throughout the DataFrame. Can have wide-reaching effects.
+      Replaces specified values throughout the DataFrame. Please assess value replacement rationale.
     extra_checks:
       arg_present:
         name: inplace
         value: true
-        set_severity: HIGH
+        set_severity: CRITICAL
 
   - func: sort_values
     mutation: "row reordering"
@@ -113,9 +114,9 @@ rules:
 
   - func: append
     mutation: "row addition"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
-      Adds rows to DataFrame. Deprecated in favor of concat().
+      Adds rows to DataFrame
     extra_checks:
       arg_present:
         name: ignore_index
@@ -148,7 +149,7 @@ rules:
 
   - func: groupby
     mutation: "data aggregation"
-    default_severity: LOW
+    default_severity: MEDIUM
     notes: |
       Groups data for aggregation. The aggregation functions applied may mutate understanding of the data.
 
@@ -160,19 +161,19 @@ rules:
 
   - func: pivot_table
     mutation: "data aggregation/reshaping"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
-      Creates a pivot table with aggregation. May lose granular data through aggregation.
+      Creates a pivot table with aggregation. Datapoint with N/A or null values may be dropped in the pivot table.
 
   - func: melt
     mutation: "data reshaping"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Reshapes data from wide to long format. Changes the fundamental structure of the data.
 
   - func: transpose
     mutation: "data transposition"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Transposes the DataFrame, swapping rows and columns.
 
@@ -195,27 +196,27 @@ rules:
 
   - func: notnull
     mutation: "null value filtering"
-    default_severity: LOW
+    default_severity: HIGH
     notes: |
-      Returns boolean mask for non-null values. Often used for filtering which can reduce dataset size.
+      Returns filter for non-null values. Please validate filter rationale.
 
   - func: isnull
     mutation: "null value filtering"  
-    default_severity: LOW
+    default_severity: HIGH
     notes: |
-      Returns boolean mask for null values. Often used for filtering which can reduce dataset size.
+      Returns filter for null values. Please validate filter rationale.
 
   - func: notna
     mutation: "null value filtering"
-    default_severity: LOW
+    default_severity: HIGH
     notes: |
-      Returns boolean mask for non-null values. Often used for filtering which can reduce dataset size.
+      Returns filter for non-null values. Please validate filter rationale.
 
   - func: isna
     mutation: "null value filtering"
-    default_severity: LOW
+    default_severity: HIGH
     notes: |
-      Returns boolean mask for null values. Often used for filtering which can reduce dataset size.
+      Returns filter for null values. Please validate filter rationale.
 
   - func: astype
     mutation: "data type conversion"
@@ -225,93 +226,94 @@ rules:
 
   - func: sum
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by summing values. Reduces granularity and loses individual data points.
 
   - func: mean
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by calculating mean. Reduces granularity and loses individual data points.
 
   - func: median
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by calculating median. Reduces granularity and loses individual data points.
 
   - func: std
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by calculating standard deviation. Reduces granularity and loses individual data points.
 
   - func: var
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by calculating variance. Reduces granularity and loses individual data points.
 
   - func: min
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by finding minimum value. Reduces granularity and loses individual data points.
 
   - func: max
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by finding maximum value. Reduces granularity and loses individual data points.
 
   - func: count
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by counting non-null values. Reduces granularity and loses individual data points.
 
   - func: size
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by counting all values. Reduces granularity and loses individual data points.
 
   - func: nunique
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by counting unique values. Reduces granularity and loses individual data points.
 
   - func: first
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by taking first value. Reduces granularity and loses other data points.
 
   - func: last
     mutation: "data aggregation"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Aggregates data by taking last value. Reduces granularity and loses other data points.
 
   - func: head
     mutation: "data sampling"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Returns first n rows, potentially excluding significant portions of the dataset.
 
   - func: tail
     mutation: "data sampling"
-    default_severity: MEDIUM
+    default_severity: LOW
     notes: |
       Returns last n rows, potentially excluding significant portions of the dataset.
 
   - func: apply
     mutation: "data transformation"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
       Applies function to data which can transform values in unpredictable ways depending on the function.
+      Please assess the function applied.
 
   - func: map
     mutation: "data transformation"
@@ -327,49 +329,53 @@ rules:
 
   - func: iloc
     mutation: "row/column selection"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
-      Selects specific rows/columns by integer position. Can reduce dataset size by excluding data.
+      Selects specific rows/columns by integer position. Potentially data filtering, please validate the filter rationale.
 
   - func: loc
     mutation: "row/column selection"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
-      Selects specific rows/columns by labels. Can reduce dataset size by excluding data.
+      Selects specific rows/columns by labels. Potentially data filtering, please validate the filter rationale.
 
   - func: isin
     mutation: "value membership filtering"
-    default_severity: LOW
+    default_severity: HIGH
     notes: |
-      Returns boolean mask for values in specified list. Often used for filtering which can reduce dataset size.
+      Returns boolean mask for values in specified list. Potentially data filtering, please validate the filter rationale.
 
   - func: where
     mutation: "conditional data selection"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
       Replaces values that don't meet condition with NaN or specified value.
+      Potentially data filtering, please validate the filter rationale.
 
   - func: mask
     mutation: "conditional data masking"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
-      Replaces values that meet condition with NaN or specified value.
+      Replaces values that meet condition with NaN or specified value
+      Potentially data filtering, please validate the filter rationale.
 
   - func: query
     mutation: "data filtering"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
-      Filters DataFrame using query expression. Can significantly reduce dataset size.
+      Filters DataFrame using query expression.
+      Potentially data filtering, please validate the filter rationale.
 
   - func: eval
     mutation: "expression evaluation"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
       Evaluates string expressions which can modify data in unpredictable ways.
+      Potentially data filtering, please validate the filter rationale.
 
   - func: clip
     mutation: "value clipping"
-    default_severity: MEDIUM
+    default_severity: HIGH
     notes: |
       Clips values to specified bounds, potentially changing extreme values.
 
@@ -381,12 +387,12 @@ rules:
 
   - func: abs
     mutation: "absolute value conversion"
-    default_severity: LOW
+    default_severity: MEDIUM
     notes: |
       Converts all values to their absolute values, losing sign information.
 
   - func: copy
     mutation: "data duplication"
-    default_severity: LOW
+    default_severity: MEDIUM
     notes: |
       Creates a copy of the DataFrame. While not mutating original, indicates data manipulation workflow. 
