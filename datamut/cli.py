@@ -30,10 +30,12 @@ def collect_python_files(paths: List[Path]) -> List[Path]:
     python_files = []
     
     for path in paths:
-        if path.is_file() and path.suffix == '.py':
+        if path.is_file() and path.suffix.lower() == '.py':
             python_files.append(path)
         elif path.is_dir():
+            # Use both patterns to catch .py and .PY files
             python_files.extend(path.rglob('*.py'))
+            python_files.extend(path.rglob('*.PY'))
     
     return python_files
 
@@ -100,7 +102,7 @@ def audit(
     rules_dir: Optional[Path] = typer.Option(
         None,
         "--rules-dir",
-        help="Additional directory containing custom rule YAML files",
+        help="Additional directory containing custom rule YAML (.yml) or Excel (.xlsx/.xls) files",
         exists=True,
         file_okay=False,
         dir_okay=True
@@ -159,11 +161,25 @@ def audit(
         # Load custom rules if specified
         if rules_dir:
             progress.update(task, description="Loading custom rules...")
+            # Load YAML files
             for yaml_file in rules_dir.glob("*.yml"):
                 try:
                     rule_loader.load_bundle(yaml_file)
                 except Exception as e:
                     console.print(f"[yellow]Warning: Failed to load {yaml_file}: {e}[/yellow]")
+            
+            # Load Excel files
+            for excel_file in rules_dir.glob("*.xlsx"):
+                try:
+                    rule_loader.load_bundle(excel_file)
+                except Exception as e:
+                    console.print(f"[yellow]Warning: Failed to load {excel_file}: {e}[/yellow]")
+            
+            for excel_file in rules_dir.glob("*.xls"):
+                try:
+                    rule_loader.load_bundle(excel_file)
+                except Exception as e:
+                    console.print(f"[yellow]Warning: Failed to load {excel_file}: {e}[/yellow]")
         
         progress.remove_task(task)
         

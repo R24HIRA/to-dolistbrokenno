@@ -1,0 +1,20 @@
+# Since I can't directly create Excel files, I'll create a CSV that can be converted to Excel
+# This shows the expected structure for Excel rule files
+
+# Option 1: Single Sheet Format
+# Column headers: func, mutation, default_severity, notes, inplace_critical, library, alias_regex
+
+func,mutation,default_severity,notes,inplace_critical,library,alias_regex
+custom_delete,data deletion,HIGH,Custom function that deletes data,FALSE,custom,^(custom|cust)$
+custom_update,data update,MEDIUM,Updates data in place,TRUE,custom,^(custom|cust)$
+risky_transform,data transformation,HIGH,Transforms data in a risky way,FALSE,custom,^(custom|cust)$
+
+# Option 2: Multi-Sheet Format would have:
+# Sheet 1 "meta": 
+#   Column A: library, Column B: custom
+#   Column A: alias_regex, Column B: ^(custom|cust)$
+#
+# Sheet 2 "rules":
+#   func | mutation | default_severity | notes | inplace_critical
+#   custom_delete | data deletion | HIGH | Custom function that deletes data | FALSE
+#   custom_update | data update | MEDIUM | Updates data in place | TRUE 
