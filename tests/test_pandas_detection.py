@@ -47,8 +47,8 @@ df2 = df.drop('b', axis=1)  # Should be detected as HIGH
         master_visitor = MasterVisitor(temp_path, rule_loader, context)
         findings = master_visitor.analyze(tree, code)
         
-        # Filter for pandas-specific findings only (ignore hardcoded magic numbers)
-        pandas_findings = [f for f in findings if f.library == 'pandas' and f.function_name == 'drop']
+        # Filter for pandas-specific findings only (ignore hardcoded numbers)
+        pandas_findings = [f for f in findings if f.library == 'pandas']
         
         # Check findings
         assert len(pandas_findings) == 2
@@ -99,7 +99,7 @@ result = df1.merge(df2, on='key')  # Should be detected
         master_visitor = MasterVisitor(temp_path, rule_loader, context)
         findings = master_visitor.analyze(tree, code)
         
-        # Filter for pandas merge findings only (ignore hardcoded magic numbers)
+        # Filter for pandas merge findings only (ignore hardcoded numbers)
         merge_findings = [f for f in findings if f.library == 'pandas' and f.function_name == 'merge']
         
         # Check findings
@@ -156,14 +156,14 @@ arr = np.delete(arr, 0)  # Should detect numpy
         master_visitor = MasterVisitor(temp_path, rule_loader, context)
         findings = master_visitor.analyze(tree, code)
         
-        # Filter for pandas/numpy specific findings only (ignore hardcoded magic numbers)
-        mutation_findings = [f for f in findings if f.library in ['pandas', 'numpy'] and f.function_name in ['drop', 'delete']]
+        # Filter for pandas/numpy specific findings only (ignore hardcoded numbers)
+        pandas_numpy_findings = [f for f in findings if f.library in ['pandas', 'numpy']]
         
         # Check findings
-        assert len(mutation_findings) == 2
+        assert len(pandas_numpy_findings) == 2
         
         # Check libraries were resolved correctly
-        libraries = {f.library for f in mutation_findings}
+        libraries = {f.library for f in pandas_numpy_findings}
         assert 'pandas' in libraries
         assert 'numpy' in libraries
         

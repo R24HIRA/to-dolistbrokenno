@@ -718,10 +718,10 @@ Severity: CRITICAL
 Mutation: hardcoded API key
 Description: Hardcoded API keys should never be in source code. Use environment variables or secure key management.
 
-Function: magic_number
+Function: hardcoded_number
 Severity: LOW
-Mutation: magic number
-Description: Magic numbers reduce code readability and maintainability. Consider using named constants.
+Mutation: hardcoded number
+Description: Hardcoded numbers reduce code readability and maintainability. Consider using named constants.
 
 Function: config_value
 Severity: MEDIUM

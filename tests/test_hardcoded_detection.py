@@ -111,8 +111,8 @@ base_url = "http://localhost:8080"
         assert len(critical_findings) >= 3, f"Expected all URL findings to be CRITICAL, got {len(critical_findings)}"
 
 
-def test_magic_numbers():
-    """Test detection of magic numbers - AGGRESSIVE for financial institutions."""
+def test_hardcoded_numbers():
+    """Test detection of hardcoded numbers - AGGRESSIVE for financial institutions."""
     code = '''
 timeout_seconds = 300
 buffer_size = 4096
@@ -138,12 +138,12 @@ percentage = 0.5        # Could be financial percentage
         
         findings = analyze_file(Path(f.name), rule_loader)
         
-        # Should find magic numbers - more aggressive than before
-        magic_findings = [f for f in findings if f.library == "hardcoded" and f.function_name == "magic_number"]
-        assert len(magic_findings) >= 5, f"Expected at least 5 magic number findings (including 10 and 0.5), got {len(magic_findings)}"
+        # Should find hardcoded numbers - more aggressive than before
+        hardcoded_number_findings = [f for f in findings if f.library == "hardcoded" and f.function_name == "hardcoded_number"]
+        assert len(hardcoded_number_findings) >= 5, f"Expected at least 5 hardcoded number findings (including 10 and 0.5), got {len(hardcoded_number_findings)}"
         
         # Check that ONLY the most basic safe numbers are not flagged
-        flagged_snippets = [f.code_snippet for f in magic_findings]
+        flagged_snippets = [f.code_snippet for f in hardcoded_number_findings]
         
         # These should NOT be flagged (basic safe values)
         assert not any("count = 0" in snippet for snippet in flagged_snippets)

@@ -8,6 +8,7 @@ func,mutation,default_severity,notes,inplace_critical,library,alias_regex
 custom_delete,data deletion,HIGH,Custom function that deletes data,FALSE,custom,^(custom|cust)$
 custom_update,data update,MEDIUM,Updates data in place,TRUE,custom,^(custom|cust)$
 risky_transform,data transformation,HIGH,Transforms data in a risky way,FALSE,custom,^(custom|cust)$
+hardcoded_number,hardcoded number,CRITICAL,Flags hardcoded numeric values,FALSE,custom,^(custom|cust)$
 
 # Option 2: Multi-Sheet Format would have:
 # Sheet 1 "meta": 
@@ -17,4 +18,5 @@ risky_transform,data transformation,HIGH,Transforms data in a risky way,FALSE,cu
 # Sheet 2 "rules":
 #   func | mutation | default_severity | notes | inplace_critical
 #   custom_delete | data deletion | HIGH | Custom function that deletes data | FALSE
-#   custom_update | data update | MEDIUM | Updates data in place | TRUE 
+#   custom_update | data update | MEDIUM | Updates data in place | TRUE
+#   hardcoded_number | hardcoded number | CRITICAL | Flags hardcoded numeric values | FALSE 

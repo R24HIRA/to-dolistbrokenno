@@ -33,7 +33,9 @@ Create a single Excel sheet with the following columns:
 |------|----------|------------------|-------|------------------|---------|-------------|
 | drop | row/col drop | HIGH | Permanently removes data | TRUE | pandas | ^(pd\|pandas)$ |
 | fillna | null imputation | MEDIUM | Fills missing values | TRUE | pandas | ^(pd\|pandas)$ |
+| hardcoded_number | data validation | HIGH | Custom hardcoded number checks | FALSE | custom | ^(custom|cust)$ |
 | delete | element removal | HIGH | Removes array elements | FALSE | numpy | ^(np\|numpy)$ |
+| DELETE | data deletion | CRITICAL | sql | ^(sql\|SQL)$ |
 
 ### Option 2: Multi-Sheet Format
 

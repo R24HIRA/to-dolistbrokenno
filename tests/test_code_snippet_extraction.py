@@ -48,7 +48,7 @@ df.drop('a', axis=1)
         # Use the analyze method
         findings = visitor.analyze(tree, code)
         
-        # Filter for pandas drop findings only (ignore hardcoded magic numbers)
+        # Filter for pandas drop findings only (ignore hardcoded numbers)
         drop_findings = [f for f in findings if f.library == 'pandas' and f.function_name == 'drop']
         
         # Check that we found the drop operation
@@ -223,13 +223,13 @@ def test_lamp_upload_function_calls():
     code = '''
 from some_module import lamp_upload
 
-# Function call with magic numbers
+# Function call with hardcoded numbers
 result = lamp_upload(
     data=df,
     table_name="test_table",
     env="PROD",
-    date=20231201,  # Magic number
-    timeout=300     # Another magic number
+    date=20231201,  # Hardcoded number
+    timeout=300     # Another hardcoded number
 )
 '''
     
@@ -259,14 +259,14 @@ result = lamp_upload(
         # Analyze
         findings = visitor.analyze(tree, code)
         
-        # Find magic number findings
-        magic_findings = [f for f in findings if f.function_name == 'magic_number']
+        # Find hardcoded number findings
+        hardcoded_findings = [f for f in findings if f.function_name == 'hardcoded_number']
         
-        # Should detect magic numbers
-        assert len(magic_findings) >= 2, f"Should detect at least 2 magic numbers, got {len(magic_findings)}"
+        # Should detect hardcoded numbers
+        assert len(hardcoded_findings) >= 2, f"Should detect at least 2 hardcoded numbers, got {len(hardcoded_findings)}"
         
-        # Verify that the magic numbers are detected
-        detected_values = [f.extra_context.get('detected_value', '') for f in magic_findings]
+        # Verify that the hardcoded numbers are detected
+        detected_values = [f.extra_context.get('detected_value', '') for f in hardcoded_findings]
         assert '20231201' in detected_values or '300' in detected_values
                 
     finally:

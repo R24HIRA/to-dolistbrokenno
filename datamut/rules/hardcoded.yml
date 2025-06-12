@@ -43,12 +43,12 @@ rules:
       Hardcoded API keys pose CRITICAL security risks in financial systems.
       Use secure key management and token rotation.
 
-  # Magic numbers - CRITICAL for financial institutions
-  - func: magic_number
-    mutation: "magic number"
+  # Hardcoded numbers - CRITICAL for financial institutions
+  - func: hardcoded_number
+    mutation: "hardcoded number"
     default_severity: CRITICAL
     notes: |
-      Magic numbers pose CRITICAL risks in financial systems (amounts, rates, limits).
+      Hardcoded numbers pose CRITICAL risks in financial systems (amounts, rates, limits).
       Use named constants and configuration management.
 
   # Configuration values - CRITICAL for financial institutions

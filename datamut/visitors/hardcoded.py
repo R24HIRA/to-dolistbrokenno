@@ -99,7 +99,7 @@ class HardcodedVisitor(BaseVisitor):
             'crypto_data': {'private_key', 'wallet_address', 'mnemonic', 'seed_phrase', 'btc_address', 'eth_address'},
         }
         
-        # For financial institutions - VERY aggressive magic number detection
+        # For financial institutions - VERY aggressive hardcoded number detection
         # Only allow the most basic numbers to avoid flagging financial values
         self.common_safe_numbers = {0, 1, -1}  # Only absolutely essential numbers
         
@@ -130,7 +130,7 @@ class HardcodedVisitor(BaseVisitor):
                     node_id = id(node.value)
                     if node_id not in self._processed_nodes:
                         self._processed_nodes.add(node_id)
-                        self._check_magic_number(node, var_name, node.value)
+                        self._check_hardcoded_number(node, var_name, node.value)
     
     def visit_SimpleString(self, node: cst.SimpleString) -> None:
         """Check standalone string literals for hardcoded values."""
@@ -142,20 +142,20 @@ class HardcodedVisitor(BaseVisitor):
                 self._check_hardcoded_string(node, None, string_value)
     
     def visit_Integer(self, node: cst.Integer) -> None:
-        """Check standalone integers for magic numbers."""
+        """Check standalone integers for hardcoded numbers."""
         # Only process if not already processed in an assignment
         node_id = id(node)
         if node_id not in self._processed_nodes:
             self._processed_nodes.add(node_id)
-            self._check_magic_number(node, None, node)
+            self._check_hardcoded_number(node, None, node)
     
     def visit_Float(self, node: cst.Float) -> None:
-        """Check standalone floats for magic numbers."""
+        """Check standalone floats for hardcoded numbers."""
         # Only process if not already processed in an assignment
         node_id = id(node)
         if node_id not in self._processed_nodes:
             self._processed_nodes.add(node_id)
-            self._check_magic_number(node, None, node)
+            self._check_hardcoded_number(node, None, node)
     
     def visit_FormattedString(self, node: cst.FormattedString) -> None:
         """Check formatted string literals (f-strings) for hardcoded values."""
@@ -248,8 +248,8 @@ class HardcodedVisitor(BaseVisitor):
                         self._create_hardcoded_finding(node, category, string_value, var_name)
                         return
     
-    def _check_magic_number(self, node: cst.CSTNode, var_name: Optional[str], value_node) -> None:
-        """Check if a number is a magic number - AGGRESSIVE for financial context."""
+    def _check_hardcoded_number(self, node: cst.CSTNode, var_name: Optional[str], value_node) -> None:
+        """Check if a number is a hardcoded number - AGGRESSIVE for financial context."""
         try:
             if isinstance(value_node, cst.Integer):
                 value = int(value_node.value)
@@ -266,7 +266,7 @@ class HardcodedVisitor(BaseVisitor):
             # Flag ANY other numeric value as potentially hardcoded financial data
             # This includes: dollar amounts, percentages, counts, IDs, etc.
             severity = self._get_financial_severity(value, var_name)
-            self._create_hardcoded_finding(node, 'magic_number', str(value), var_name, severity)
+            self._create_hardcoded_finding(node, 'hardcoded_number', str(value), var_name, severity)
                 
         except (ValueError, TypeError):
             pass
@@ -381,7 +381,7 @@ class HardcodedVisitor(BaseVisitor):
         # - Security vulnerability (credentials, tokens, IPs)
         # - Compliance violation (hardcoded amounts, rates, limits)
         # - Operational risk (paths, URLs, configurations)
-        # - Audit trail issues (magic numbers, undocumented values)
+        # - Audit trail issues (hardcoded numbers, undocumented values)
         return Severity.CRITICAL
 
     def _extract_binary_string_concatenation(self, node: cst.BinaryOperation) -> Optional[str]:
